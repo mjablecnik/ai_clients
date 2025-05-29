@@ -1,7 +1,15 @@
 name: ai_clients
 description: A Dart package providing a unified interface for interacting with various AI models through different clients.
+repository: https://github.com/mjablecnik/ai_clients
 version: 0.1.0
-# repository: https://github.com/my_org/my_repo
+
+tags:
+  - ai
+  - llm
+  - client
+  - openai
+  - baseten
+  - together
 
 environment:
   sdk: ^3.8.0
