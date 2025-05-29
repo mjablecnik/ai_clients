@@ -4,17 +4,17 @@ void main() async {
   const prompt = 'Hello, how are you?';
 
   // BasetenClient example
-  var basetenClient = BasetenClient();
+  var basetenClient = AiClients.baseten();
   var basetenResponse = await basetenClient.query(prompt: prompt);
   print('BasetenClient response: $basetenResponse');
 
   // OpenAiClient example
-  var openAiClient = OpenAiClient();
+  var openAiClient = AiClients.openAi();
   var openAiResponse = await openAiClient.query(prompt: prompt);
   print('OpenAiClient response: $openAiResponse');
 
   // TogetherClient example
-  var togetherClient = TogetherClient();
+  var togetherClient = AiClients.together();
   var togetherResponse = await togetherClient.query(prompt: prompt);
   print('TogetherClient response: $togetherResponse');
 }

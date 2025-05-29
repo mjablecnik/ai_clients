@@ -47,7 +47,7 @@ Import the package and create an instance of the desired client. Each client req
 import 'package:ai_clients/ai_clients.dart';
 
 void main() async {
-  var client = BasetenClient(); // Uses BASETEN_API_KEY from env by default
+  var client = AiClients.baseten(); // Uses BASETEN_API_KEY from env by default
   var response = await client.query(prompt: 'Hello, how are you?');
   print(response);
 }
@@ -59,7 +59,7 @@ void main() async {
 import 'package:ai_clients/ai_clients.dart';
 
 void main() async {
-  var client = TogetherClient(); // Uses TOGETHER_API_KEY from env by default
+  var client = AiClients.together(); // Uses TOGETHER_API_KEY from env by default
   var response = await client.query(prompt: 'Hello, how are you?');
   print(response);
 }
@@ -71,7 +71,7 @@ void main() async {
 import 'package:ai_clients/ai_clients.dart';
 
 void main() async {
-  var client = OpenAiClient(apiKey: 'YOUR_OPENAI_API_KEY');
+  var client = AiClients.openAi(apiKey: 'YOUR_OPENAI_API_KEY');
   var response = await client.query(
     prompt: 'Hello, how are you?',
     model: 'gpt-4.1', // Optional, defaults to 'gpt-4.1'

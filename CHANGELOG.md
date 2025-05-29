@@ -1,3 +1,7 @@
+## 0.2.0
+
+- Add class for instantiating AI clients
+
 ## 0.1.0
 
 - Initial version.
