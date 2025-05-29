@@ -1,8 +1,6 @@
 # AI Clients Package
 
 [![pub package](https://img.shields.io/pub/v/ai_clients.svg)](https://pub.dev/packages/ai_clients)
-[![pub points](https://badges.bar/ai_clients/pub%20points)](https://pub.dev/packages/ai_clients/score)
-[![likes](https://badges.bar/ai_clients/likes)](https://pub.dev/packages/ai_clients/score)
 
 A Dart package providing a unified interface for interacting with various AI models (OpenAI, Baseten, Together) through simple, consistent clients.
 
