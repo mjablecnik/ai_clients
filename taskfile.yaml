@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  publish:
+    desc: Publish the package to pub.dev
+    cmds:
+      - dart pub publish
+
+  publish-dry-run:
+    desc: Run a dry-run of the publish process to pub.dev
+    cmds:
+      - dart pub publish --dry-run
