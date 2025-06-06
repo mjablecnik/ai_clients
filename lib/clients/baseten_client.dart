@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:ai_clients/clients/ai_client.dart';
+import 'package:ai_clients/src/models.dart';
+import 'package:ai_clients/src/utils.dart';
 import 'package:dio/dio.dart';
 
 class BasetenClient implements AiClient {
@@ -26,10 +28,10 @@ class BasetenClient implements AiClient {
   Future<String> query({
     required String prompt,
     String? system,
-    String? context,
+    List<Context>? contexts,
     String model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
   }) async {
-    final contextMessage = context != null ? '\n\n======CONTEXT======\n\n$context\n\n=============\n\n' : '';
+    final contextMessage = Utils.buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model,
       "stop": [],

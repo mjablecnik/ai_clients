@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:ai_clients/clients/ai_client.dart';
+import 'package:ai_clients/ai_clients.dart';
 import 'package:dio/dio.dart';
 
 class TogetherClient implements AiClient {
@@ -26,10 +26,10 @@ class TogetherClient implements AiClient {
   Future<String> query({
     required String prompt,
     String? system,
-    String? context,
+    List<Context>? contexts,
     String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
   }) async {
-    final contextMessage = context != null ? '\n\n======CONTEXT======\n\n$context\n\n=============\n\n' : '';
+    final contextMessage = Utils.buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model,
       'stop': ['</s>', '[/INST]'],

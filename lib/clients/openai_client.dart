@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:ai_clients/clients/ai_client.dart';
+import 'package:ai_clients/src/models.dart';
+import 'package:ai_clients/src/utils.dart';
 import 'package:dio/dio.dart';
-
 
 class OpenAiClient implements AiClient {
   final Dio _dio;
@@ -24,8 +25,13 @@ class OpenAiClient implements AiClient {
   /// [prompt] is the user's message.
   /// [model] defaults to 'gpt-3.5-turbo'.
   @override
-  Future<String> query({required String prompt, String? system, String? context, String model = 'gpt-4.1'}) async {
-    final contextMessage = context != null ? '\n\n======CONTEXT======\n\n$context\n\n=============\n\n' : '';
+  Future<String> query({
+    required String prompt,
+    String? system,
+    List<Context>? contexts,
+    String model = 'gpt-4.1',
+  }) async {
+    final contextMessage = Utils.buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model,
       'messages': [
