@@ -1,10 +1,11 @@
 ## 0.3.0
 
-- Add more contexts into one prompt
+- Added more contexts into one prompt.
+- Added duration into queries.
   
 ## 0.2.0
 
-- Add class for instantiating AI clients
+- Added class for instantiating AI clients.
 
 ## 0.1.0
 
