@@ -30,7 +30,9 @@ class OpenAiClient implements AiClient {
     String? system,
     List<Context>? contexts,
     String model = 'gpt-4.1',
+    Duration delay = Duration.zero,
   }) async {
+    await Future.delayed(delay);
     final contextMessage = Utils.buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model,

@@ -28,7 +28,9 @@ class TogetherClient implements AiClient {
     String? system,
     List<Context>? contexts,
     String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+    Duration delay = Duration.zero,
   }) async {
+    await Future.delayed(delay);
     final contextMessage = Utils.buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model,

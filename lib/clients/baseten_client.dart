@@ -30,7 +30,9 @@ class BasetenClient implements AiClient {
     String? system,
     List<Context>? contexts,
     String model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
+    Duration delay = Duration.zero,
   }) async {
+    await Future.delayed(delay);
     final contextMessage = Utils.buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model,
