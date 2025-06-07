@@ -1,3 +1,7 @@
+## 0.3.1
+
+- Simplified the prompt building process.
+  
 ## 0.3.0
 
 - Added more contexts into one prompt.
