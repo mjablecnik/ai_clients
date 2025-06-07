@@ -31,7 +31,7 @@ class TogetherClient implements AiClient {
     Duration delay = Duration.zero,
   }) async {
     await Future.delayed(delay);
-    final contextMessage = Utils.buildPrompt(prompt: prompt, contexts: contexts);
+    final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model,
       'stop': ['</s>', '[/INST]'],
