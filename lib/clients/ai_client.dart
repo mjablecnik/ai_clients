@@ -10,4 +10,13 @@ abstract class AiClient {
     String model,
     Duration delay = Duration.zero,
   });
+
+  Future<AiClientResponse> query({
+    required String prompt,
+    String? system,
+    String model,
+    Duration delay = Duration.zero,
+    List<Context>? contexts,
+    List<Tool>? tools,
+  });
 }
