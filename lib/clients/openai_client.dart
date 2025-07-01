@@ -25,7 +25,7 @@ class OpenAiClient implements AiClient {
   /// [prompt] is the user's message.
   /// [model] defaults to 'gpt-3.5-turbo'.
   @override
-  Future<String> query({
+  Future<String> simpleQuery({
     required String prompt,
     String? system,
     List<Context>? contexts,

@@ -3,7 +3,7 @@ import 'package:ai_clients/src/models.dart';
 abstract class AiClient {
   AiClient({String? apiUrl, String? apiKey});
 
-  Future<String> query({
+  Future<String> simpleQuery({
     required String prompt,
     String? system,
     List<Context>? contexts,

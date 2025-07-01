@@ -25,7 +25,7 @@ class BasetenClient implements AiClient {
   /// [prompt] is the user's message.
   /// [model] defaults to 'meta-llama/Llama-4-Maverick-17B-128E-Instruct'.
   @override
-  Future<String> query({
+  Future<String> simpleQuery({
     required String prompt,
     String? system,
     List<Context>? contexts,

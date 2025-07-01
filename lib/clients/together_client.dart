@@ -23,7 +23,7 @@ class TogetherClient implements AiClient {
   /// [prompt] is the user's message.
   /// [model] defaults to 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free'.
   @override
-  Future<String> query({
+  Future<String> simpleQuery({
     required String prompt,
     String? system,
     List<Context>? contexts,
