@@ -54,4 +54,42 @@ class OpenAiClient implements AiClient {
       throw Exception('Failed to fetch response: ${e.response?.data ?? e.message}');
     }
   }
+
+  @override
+  Future<AiClientResponse> query({
+    required String prompt,
+    String? system,
+    String model = 'gpt-4.1',
+    Duration delay = Duration.zero,
+    List<Context>? contexts,
+    List<Tool>? tools,
+  }) async {
+    await Future.delayed(delay);
+    final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
+    final messages = [
+      if (system != null) {'role': 'system', 'content': system},
+      {'role': 'user', 'content': prompt + contextMessage},
+    ];
+
+    final data = {
+      'model': model,
+      'messages': messages,
+      if (tools != null && tools.isNotEmpty)
+        'tools': tools
+            .map(
+              (tool) => {
+                'type': 'function',
+                'function': {'name': tool.name ?? 'function', 'description': tool.description},
+              },
+            )
+            .toList(),
+    };
+
+    try {
+      final response = await _dio.post('/chat/completions', data: data);
+      return AiClientResponse.fromOpenAi(response.data);
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch response: ${e.response?.data ?? e.message}');
+    }
+  }
 }

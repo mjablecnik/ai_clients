@@ -24,11 +24,11 @@ class TogetherClient implements AiClient {
   /// [model] defaults to 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free'.
   @override
   Future<String> simpleQuery({
+    String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+    Duration delay = Duration.zero,
     required String prompt,
     String? system,
     List<Context>? contexts,
-    String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
-    Duration delay = Duration.zero,
   }) async {
     await Future.delayed(delay);
     final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
@@ -57,5 +57,17 @@ class TogetherClient implements AiClient {
     } on DioException catch (e) {
       throw Exception('Failed to fetch response: ${e.response?.data ?? e.message}');
     }
+  }
+
+  @override
+  Future<AiClientResponse> query({
+    String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+    Duration delay = Duration.zero,
+    required String prompt,
+    String? system,
+    List<Context>? contexts,
+    List<Tool>? tools,
+  }) {
+    throw UnimplementedError();
   }
 }
