@@ -1,21 +1,21 @@
 import 'dart:convert';
-import 'package:ai_clients/models/tokens/prompt_tokens_details.dart';
-import 'package:ai_clients/models/tokens/token_details.dart';
 import 'package:ai_clients/models/tool.dart';
-import 'package:ai_clients/models/tokens/token_usage.dart';
+//import 'package:ai_clients/models/tokens/prompt_tokens_details.dart';
+//import 'package:ai_clients/models/tokens/token_details.dart';
+//import 'package:ai_clients/models/tokens/token_usage.dart';
 
 class AiClientResponse {
   final String id;
   final String role;
   final String message;
-  final TokenUsage tokenUsage;
+  //final TokenUsage tokenUsage;
   final List<Tool> tools;
 
   const AiClientResponse({
     required this.id,
     required this.role,
     required this.message,
-    required this.tokenUsage,
+    //required this.tokenUsage,
     this.tools = const [],
   });
 
@@ -40,6 +40,7 @@ class AiClientResponse {
         }
       }
 
+      /*
       final tokenUsage = TokenUsage(
         promptTokens: usage['prompt_tokens'] ?? 0,
         completionTokens: usage['completion_tokens'] ?? 0,
@@ -56,12 +57,13 @@ class AiClientResponse {
           rejectedPredictionTokens: 0,
         ),
       );
+      */
 
       return AiClientResponse(
         id: id,
         role: role,
         message: message,
-        tokenUsage: tokenUsage,
+        //tokenUsage: tokenUsage,
         tools: tools,
       );
     } else {
@@ -71,7 +73,7 @@ class AiClientResponse {
 
   @override
   String toString() {
-    return 'AiClientResponse(id: $id, role: $role, message: $message, tokenUsage: $tokenUsage, tools: $tools)';
+    return 'AiClientResponse(id: $id, role: $role, message: $message, tools: $tools)';
   }
 }
 
