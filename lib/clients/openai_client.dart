@@ -4,10 +4,13 @@ import 'package:ai_clients/models.dart';
 import 'package:ai_clients/utils.dart';
 import 'package:dio/dio.dart';
 
+typedef HistoryChat = List<Map<String, String>>;
+
 class OpenAiClient implements AiClient {
   final Dio _dio;
   final String _apiKey;
   final String _apiUrl;
+  final Map<String, HistoryChat> _history = {};
 
   OpenAiClient({String? apiUrl, String? apiKey})
     : _dio = Dio(),
@@ -31,14 +34,19 @@ class OpenAiClient implements AiClient {
     List<Context>? contexts,
     String model = 'gpt-4.1',
     Duration delay = Duration.zero,
+    historyKey = 'simpleQueryHistory',
   }) async {
     await Future.delayed(delay);
     final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
+
+    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
+    _history[historyKey]!.add({'role': 'user', 'content': prompt + contextMessage});
+
     final data = {
       'model': model,
       'messages': [
         if (system != null) {'role': 'developer', 'content': system},
-        {'role': 'user', 'content': prompt + contextMessage},
+        ..._history[historyKey]!,
       ],
     };
 
@@ -63,12 +71,17 @@ class OpenAiClient implements AiClient {
     Duration delay = Duration.zero,
     List<Context>? contexts,
     List<Tool>? tools,
+    historyKey = 'queryHistory',
   }) async {
     await Future.delayed(delay);
     final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
+
+    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
+    _history[historyKey]!.add({'role': 'user', 'content': prompt + contextMessage});
+
     final messages = [
       if (system != null) {'role': 'system', 'content': system},
-      {'role': 'user', 'content': prompt + contextMessage},
+      ..._history[historyKey]!,
     ];
 
     final data = {

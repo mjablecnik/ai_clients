@@ -27,43 +27,48 @@ void main() async {
     //prompt: "řekni mi s čím mi můžeš pomoci",
     prompt: "řekni mi jaké je teď počasí",
     tools: [
-      Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation)
+      Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
     ],
   );
 
   print('\nAi Client Response:');
   print(openAiResponse);
 
-  print('\nTool Call Response:');
+  String response = '';
+  if (openAiResponse.message.isNotEmpty) {
+    response = openAiResponse.message;
+  }
 
   if (openAiResponse.tools.isNotEmpty) {
-    for (var tool in openAiResponse.tools) {
-      final response = tool.call();
-      print(response);
-    }
+    print('\nTool Response:');
+    response = openAiResponse.tools.first.call().toString();
+    print(response);
+  }
+
+  if (response.isNotEmpty) {
+    var openAiResponse2 = await openAiClient.query(
+      system: "Jsi AI asistent a komunikuješ v češtině",
+      //prompt: "řekni mi s čím mi můžeš pomoci",
+      prompt: response,
+      tools: [
+        Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
+      ],
+    );
+    print('\nFinal Response:');
+    print(openAiResponse2.message);
+  } else {
+    print("No response");
   }
 }
-
 
 Map<String, dynamic> getWeatherInformation(Map<String, dynamic> json) {
   return {
     "date": "2025-07-01",
     "location": "Prague",
-    "temperature": {
-      "min": 18,
-      "max": 27,
-      "unit": "°C"
-    },
+    "temperature": {"min": 18, "max": 27, "unit": "°C"},
     "weather_condition": "partly cloudy",
-    "precipitation": {
-      "probability": 20,
-      "unit": "%"
-    },
+    "precipitation": {"probability": 20, "unit": "%"},
     "humidity": 65,
-    "wind": {
-      "speed": 12,
-      "direction": "NW",
-      "unit": "km/h"
-    }
+    "wind": {"speed": 12, "direction": "NW", "unit": "km/h"},
   };
 }
