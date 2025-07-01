@@ -38,5 +38,5 @@ class Parameter {
 
   @override
   String toString() =>
-      'Parameter(name: \$name, type: \$type, description: \$description, required: \$required, enumValues: \$enumValues)';
+      'Parameter(name: $name, type: $type, description: $description, required: $required, enumValues: $enumValues)';
 }

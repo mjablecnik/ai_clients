@@ -29,5 +29,5 @@ class TokenDetails {
 
   @override
   String toString() =>
-      'TokenDetails(reasoningTokens: \$reasoningTokens, audioTokens: \$audioTokens, acceptedPredictionTokens: \$acceptedPredictionTokens, rejectedPredictionTokens: \$rejectedPredictionTokens)';
+      'TokenDetails(reasoningTokens: $reasoningTokens, audioTokens: $audioTokens, acceptedPredictionTokens: $acceptedPredictionTokens, rejectedPredictionTokens: $rejectedPredictionTokens)';
 }

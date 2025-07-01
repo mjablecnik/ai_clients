@@ -21,10 +21,8 @@ class TokenUsage {
       promptTokens: json['prompt_tokens'],
       completionTokens: json['completion_tokens'],
       totalTokens: json['total_tokens'],
-      promptTokensDetails:
-      PromptTokensDetails.fromJson(json['prompt_tokens_details']),
-      completionTokensDetails:
-      TokenDetails.fromJson(json['completion_tokens_details']),
+      promptTokensDetails: PromptTokensDetails.fromJson(json['prompt_tokens_details']),
+      completionTokensDetails: TokenDetails.fromJson(json['completion_tokens_details']),
     );
   }
 
@@ -35,4 +33,9 @@ class TokenUsage {
     'prompt_tokens_details': promptTokensDetails.toJson(),
     'completion_tokens_details': completionTokensDetails.toJson(),
   };
+
+  @override
+  String toString() {
+    return 'TokenUsage{promptTokens: $promptTokens, completionTokens: $completionTokens, totalTokens: $totalTokens, promptTokensDetails: $promptTokensDetails, completionTokensDetails: $completionTokensDetails}';
+  }
 }

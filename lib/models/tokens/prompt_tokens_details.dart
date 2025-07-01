@@ -21,5 +21,5 @@ class PromptTokensDetails {
 
   @override
   String toString() =>
-      'PromptTokensDetails(cachedTokens: \$cachedTokens, audioTokens: \$audioTokens)';
+      'PromptTokensDetails(cachedTokens: $cachedTokens, audioTokens: $audioTokens)';
 }

@@ -43,5 +43,5 @@ class Tool {
 
   @override
   String toString() =>
-      'Tool(name: \$name, description: \$description, parameters: \$parameters, arguments: \$arguments)';
+      'Tool(name: $name, description: $description, parameters: $parameters, arguments: $arguments)';
 }
