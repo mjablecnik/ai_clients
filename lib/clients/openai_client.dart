@@ -79,7 +79,25 @@ class OpenAiClient implements AiClient {
             .map(
               (tool) => {
                 'type': 'function',
-                'function': {'name': tool.name ?? 'function', 'description': tool.description},
+                'function': {
+                  'name': tool.name,
+                  'description': tool.description,
+                  'parameters': {
+                    'type': 'object',
+                    'properties': {
+                      for (final param in tool.parameters)
+                        param.name: {
+                          'type': param.type,
+                          'description': param.description,
+                          if (param.enumValues != null) 'enum': param.enumValues,
+                        }
+                    },
+                    'required': [
+                      for (final param in tool.parameters)
+                        if (param.required) param.name
+                    ],
+                  },
+                },
               },
             )
             .toList(),
@@ -87,7 +105,8 @@ class OpenAiClient implements AiClient {
 
     try {
       final response = await _dio.post('/chat/completions', data: data);
-      return AiClientResponse.fromOpenAi(response.data);
+      //print(response.data);
+      return AiClientResponse.fromOpenAi(response.data, originalTools: tools ?? []);
     } on DioException catch (e) {
       throw Exception('Failed to fetch response: ${e.response?.data ?? e.message}');
     }
