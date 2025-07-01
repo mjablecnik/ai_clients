@@ -1,4 +1,4 @@
-import 'package:ai_clients/src/models.dart';
+import 'package:ai_clients/models/context.dart';
 
 String buildPrompt({required String prompt, List<Context>? contexts}) {
   final sb = StringBuffer(prompt);

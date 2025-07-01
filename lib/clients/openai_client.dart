@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:ai_clients/clients/ai_client.dart';
-import 'package:ai_clients/src/models.dart';
-import 'package:ai_clients/src/utils.dart';
+import 'package:ai_clients/models.dart';
+import 'package:ai_clients/utils.dart';
 import 'package:dio/dio.dart';
 
 class OpenAiClient implements AiClient {

@@ -1,93 +1,8 @@
 import 'dart:convert';
-import 'package:ai_clients/src/tokens.dart';
-
-class Context {
-  final String? name;
-  final String value;
-
-  const Context({this.name, required this.value});
-}
-
-class Parameter {
-  final String name;
-  final String type;
-  final String description;
-  final bool required;
-  final List<String>? enumValues;
-
-  const Parameter({
-    required this.name,
-    required this.type,
-    required this.description,
-    this.required = false,
-    this.enumValues,
-  });
-
-  factory Parameter.fromJson(Map<String, dynamic> json) {
-    return Parameter(
-      name: json['name'] ?? '',
-      type: json['type'] ?? '',
-      description: json['description'] ?? '',
-      required: json['required'] ?? false,
-      enumValues: (json['enum'] as List?)?.map((e) => e.toString()).toList(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final map = {
-      'name': name,
-      'type': type,
-      'description': description,
-      'required': required,
-    };
-    if (enumValues != null) {
-      map['enum'] = enumValues as Object;
-    }
-    return map;
-  }
-}
-
-class Tool {
-  final String name;
-  final String description;
-  final Function function;
-  final List<Parameter> parameters;
-  final Map<String, dynamic> arguments;
-
-  const Tool({
-    required this.name,
-    required this.description,
-    required this.function,
-    this.parameters = const [],
-    this.arguments = const {},
-  });
-
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'description': description,
-    'parameters': parameters.map((p) => p.toJson()).toList(),
-  };
-
-  dynamic call() {
-    return function(arguments);
-  }
-
-  Tool copyWith({
-    String? name,
-    String? description,
-    Function? function,
-    List<Parameter>? parameters,
-    Map<String, dynamic>? arguments,
-  }) {
-    return Tool(
-      name: name ?? this.name,
-      description: description ?? this.description,
-      function: function ?? this.function,
-      parameters: parameters ?? this.parameters,
-      arguments: arguments ?? this.arguments,
-    );
-  }
-}
+import 'package:ai_clients/models/tokens/prompt_tokens_details.dart';
+import 'package:ai_clients/models/tokens/token_details.dart';
+import 'package:ai_clients/models/tool.dart';
+import 'package:ai_clients/models/tokens/token_usage.dart';
 
 class AiClientResponse {
   final String id;
@@ -135,11 +50,11 @@ class AiClientResponse {
         completionTokensDetails: usage['completion_tokens_details'] != null
             ? TokenDetails.fromJson(usage['completion_tokens_details'])
             : const TokenDetails(
-                reasoningTokens: 0,
-                audioTokens: 0,
-                acceptedPredictionTokens: 0,
-                rejectedPredictionTokens: 0,
-              ),
+          reasoningTokens: 0,
+          audioTokens: 0,
+          acceptedPredictionTokens: 0,
+          rejectedPredictionTokens: 0,
+        ),
       );
 
       return AiClientResponse(

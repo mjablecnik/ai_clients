@@ -1,4 +1,4 @@
-import 'package:ai_clients/src/models.dart';
+import 'package:ai_clients/models.dart';
 
 abstract class AiClient {
   AiClient({String? apiUrl, String? apiKey});
