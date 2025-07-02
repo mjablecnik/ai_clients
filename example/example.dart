@@ -1,12 +1,11 @@
 import 'package:ai_clients/ai_clients.dart';
 
 void main() async {
-  // OpenAiClient example
-  var openAiClient = AiClients.together();
-  var openAiResponse = await openAiClient.query(
+  var aiClient = AiClients.together();
+  var clientResponse = await aiClient.query(
     model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
     system: "Jsi AI asistent a komunikuješ v češtině",
-    //prompt: "řekni mi s čím mi můžeš pomoci",
+    //prompt: "řekni mi vtip",
     prompt: "řekni mi jaké je teď počasí",
     tools: [
       Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
@@ -14,20 +13,20 @@ void main() async {
   );
 
   print('\nAi Client Response:');
-  print(openAiResponse);
+  print(clientResponse);
 
-  if (openAiResponse.message.isNotEmpty) {
+  if (clientResponse.message.isNotEmpty) {
     print('\nResponse:');
-    print(openAiResponse.message);
+    print(clientResponse.message);
   }
 
-  if (openAiResponse.tools.isNotEmpty) {
+  if (clientResponse.tools.isNotEmpty) {
     print('\nTool Response:');
-    final response = openAiResponse.tools.first.call().toString();
+    final response = clientResponse.tools.first.call().toString();
     print(response);
 
     if (response.isNotEmpty) {
-      var openAiResponse2 = await openAiClient.query(
+      var openAiResponse2 = await aiClient.query(
         model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         system: "Jsi AI asistent a komunikuješ v češtině",
         prompt: response,
@@ -43,10 +42,8 @@ void main() async {
     }
   }
 
-
   print('\nChat history:');
-  print(openAiClient.history);
-
+  print(aiClient.history);
 }
 
 Map<String, dynamic> getWeatherInformation(Map<String, dynamic> json) {
