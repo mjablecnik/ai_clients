@@ -4,7 +4,7 @@ import 'package:ai_clients/models.dart';
 import 'package:ai_clients/utils.dart';
 import 'package:dio/dio.dart';
 
-typedef HistoryChat = List<Map<String, String>>;
+typedef HistoryChat = List<Map<String, dynamic>>;
 
 class OpenAiClient implements AiClient {
   final Dio _dio;

@@ -58,6 +58,7 @@ class TogetherClient implements AiClient {
       final response = await _dio.post('/chat/completions', data: data);
       final choices = response.data['choices'];
       if (choices != null && choices.isNotEmpty) {
+        _history[historyKey]!.add(choices[0]['message']);
         return choices[0]['message']['content'] as String;
       } else {
         throw Exception('No response from ChatGPT API.');
@@ -81,6 +82,7 @@ class TogetherClient implements AiClient {
     await Future.delayed(delay);
 
     if (!_history.containsKey(historyKey)) _history[historyKey] = [];
+    if (system != null && _history[historyKey]!.isEmpty) _history[historyKey]!.add({'role': 'system', 'content': system});
     _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
 
     final messages = [
@@ -129,6 +131,13 @@ class TogetherClient implements AiClient {
     try {
       final response = await _dio.post('/chat/completions', data: data);
       //print(response.data);
+
+      final choices = response.data['choices'];
+      print(choices[0]['message']);
+      if (choices != null && choices.isNotEmpty && choices[0]['message'] != null) {
+        _history[historyKey]!.add({...choices[0]['message']});
+      }
+
       return AiClientResponse.fromOpenAi(response.data, originalTools: tools ?? []);
     } on DioException catch (e) {
       throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
