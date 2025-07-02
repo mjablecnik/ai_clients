@@ -8,9 +8,14 @@ sealed class Message {
 
   factory Message.assistant(String content) => AssistantMessage(content: content);
 
-  factory Message.tool(String content) => ToolMessage(content: content);
+  factory Message.toolsCall(String content) => ToolsCallMessage(content: content);
 
   factory Message.system(String content) => SystemMessage(content: content);
+
+  @override
+  String toString() {
+    return 'Message(type: $type, content: $content)';
+  }
 }
 
 class UserMessage extends Message {
@@ -18,11 +23,12 @@ class UserMessage extends Message {
 }
 
 class AssistantMessage extends Message {
-  AssistantMessage({required super.content}) : super(type: 'assistant');
+  final String? tools;
+  AssistantMessage({required super.content, this.tools}) : super(type: 'assistant');
 }
 
-class ToolMessage extends Message {
-  ToolMessage({required super.content}) : super(type: 'tool');
+class ToolsCallMessage extends Message {
+  ToolsCallMessage({required super.content}) : super(type: 'tool');
 }
 
 class SystemMessage extends Message {

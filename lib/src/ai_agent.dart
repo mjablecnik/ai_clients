@@ -8,9 +8,9 @@ class AiAgent {
   final String description;
   final bool enableHistory;
 
-  final ChatHistory _history = const ChatHistory();
+  final ChatHistory _history = ChatHistory();
 
-  const AiAgent({required this.client, required this.tools, required this.description, this.enableHistory = true});
+  AiAgent({required this.client, required this.description, this.tools = const [], this.enableHistory = true});
 
   Future<Message> sendMessage(Message message, {List<Context> context = const []}) async {
     if (enableHistory) _history.addMessage(message);
@@ -22,7 +22,14 @@ class AiAgent {
       system: description,
     );
 
-    final responseMessage = Message.assistant(response.message);
+
+    final Message responseMessage;
+    switch (response) {
+      case ToolResponse():
+        responseMessage = Message.toolsCall(response.rawMessage!);
+      case AssistantResponse():
+        responseMessage = Message.assistant(response.message!);
+    }
 
     if (enableHistory) _history.addMessage(responseMessage);
 
@@ -32,12 +39,16 @@ class AiAgent {
   void clearHistory() {
     _history.clear();
   }
+
+  void showHistory() {
+    print(_history.messages);
+  }
 }
 
 class ChatHistory {
-  final List<Message> messages;
+  List<Message> messages = [];
 
-  const ChatHistory({this.messages = const []});
+  ChatHistory();
 
   void addMessage(Message message) {
     messages.add(message);

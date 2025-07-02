@@ -1,20 +1,32 @@
 import 'dart:convert';
 import 'package:ai_clients/models/tool.dart';
+
 //import 'package:ai_clients/models/tokens/prompt_tokens_details.dart';
 //import 'package:ai_clients/models/tokens/token_details.dart';
 //import 'package:ai_clients/models/tokens/token_usage.dart';
 
-class AiClientResponse {
+class AssistantResponse extends AiClientResponse {
+  AssistantResponse({required super.id, required super.message, super.role = 'assistant'});
+}
+
+class ToolResponse extends AiClientResponse {
+  ToolResponse({required super.id, required super.tools, super.role = 'tool', required super.rawMessage});
+}
+
+sealed class AiClientResponse {
   final String id;
   final String role;
-  final String message;
+  final String? message;
+  final String? rawMessage;
+
   //final TokenUsage tokenUsage;
   final List<Tool> tools;
 
   const AiClientResponse({
     required this.id,
     required this.role,
-    required this.message,
+    this.message,
+    this.rawMessage,
     //required this.tokenUsage,
     this.tools = const [],
   });
@@ -35,7 +47,7 @@ class AiClientResponse {
         for (var t in (messageObj['tool_calls'] as List)) {
           final name = (t as Map<String, dynamic>)['function']['name'];
           final tool = originalTools.firstWhere((tool) => tool.name == name);
-          tool.copyWith(arguments: jsonDecode(t['function']['arguments']));
+          tool.arguments = jsonDecode(t['function']['arguments']);
           tools.add(tool);
         }
       }
@@ -59,13 +71,16 @@ class AiClientResponse {
       );
       */
 
-      return AiClientResponse(
-        id: id,
-        role: role,
-        message: message,
-        //tokenUsage: tokenUsage,
-        tools: tools,
-      );
+      final finishReason = choices[0]['finish_reason'];
+
+      if (finishReason == 'tool_calls') {
+        return ToolResponse(id: id, tools: tools, rawMessage: jsonEncode(messageObj['tool_calls']));
+      } else if (finishReason == 'stop') {
+        return AssistantResponse(id: id, message: message);
+      } else {
+        throw Exception('Unknown response role: $role.');
+      }
+
     } else {
       throw Exception('No response from ChatGPT API.');
     }
@@ -76,4 +91,3 @@ class AiClientResponse {
     return 'AiClientResponse(id: $id, role: $role, message: $message, tools: $tools)';
   }
 }
-

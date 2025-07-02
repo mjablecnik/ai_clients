@@ -1,0 +1,31 @@
+import 'package:ai_clients/ai_clients.dart';
+import 'package:ai_clients/models/message.dart';
+import 'package:ai_clients/src/ai_agent.dart';
+
+void main() async {
+  final tools = [
+    Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
+  ];
+  var aiClient = AiClients.together(model: "meta-llama/Llama-3.3-70B-Instruct-Turbo");
+  var aiAgent = AiAgent(client: aiClient, description: "Jsi AI asistent a komunikuješ v češtině", tools: tools);
+  var response = await aiAgent.sendMessage(Message.user("řekni mi jaké je teď počasí"));
+
+
+
+  //var response2 = await aiAgent.sendMessage(Message.assistant(response));
+  print(response);
+
+  aiAgent.showHistory();
+}
+
+Map<String, dynamic> getWeatherInformation(Map<String, dynamic> json) {
+  return {
+    "date": "2025-07-01",
+    "location": "Prague",
+    "temperature": {"min": 18, "max": 27, "unit": "°C"},
+    "weather_condition": "partly cloudy",
+    "precipitation": {"probability": 20, "unit": "%"},
+    "humidity": 65,
+    "wind": {"speed": 12, "direction": "NW", "unit": "km/h"},
+  };
+}
