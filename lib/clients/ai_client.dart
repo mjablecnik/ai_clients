@@ -8,6 +8,7 @@ abstract class AiClient {
     String? system,
     List<Context>? contexts,
     String model,
+    String role = 'user',
     Duration delay = Duration.zero,
   });
 
@@ -15,8 +16,20 @@ abstract class AiClient {
     required String prompt,
     String? system,
     String model,
+    String role = 'user',
     Duration delay = Duration.zero,
     List<Context>? contexts,
     List<Tool>? tools,
+  });
+
+  Future<AiClientResponse> chat({
+    required String prompt,
+    String? system,
+    String model,
+    String role = 'user',
+    Duration delay = Duration.zero,
+    List<Context>? contexts,
+    List<Tool>? tools,
+    String historyKey = 'default',
   });
 }

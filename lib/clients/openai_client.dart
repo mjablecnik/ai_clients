@@ -35,18 +35,14 @@ class OpenAiClient implements AiClient {
     String model = 'gpt-4.1',
     String role = 'user',
     Duration delay = Duration.zero,
-    historyKey = 'simpleQueryHistory',
   }) async {
     await Future.delayed(delay);
-
-    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
-    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
 
     final data = {
       'model': model,
       'messages': [
         if (system != null) {'role': 'developer', 'content': system},
-        ..._history[historyKey]!,
+        {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
       ],
     };
 
@@ -71,17 +67,13 @@ class OpenAiClient implements AiClient {
     Duration delay = Duration.zero,
     List<Context>? contexts,
     List<Tool>? tools,
-    historyKey = 'queryHistory',
     String role = 'user',
   }) async {
     await Future.delayed(delay);
 
-    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
-    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
-
     final messages = [
       if (system != null) {'role': 'system', 'content': system},
-      ..._history[historyKey]!,
+      {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
     ];
 
     final data = {
@@ -103,11 +95,11 @@ class OpenAiClient implements AiClient {
                           'type': param.type,
                           'description': param.description,
                           if (param.enumValues != null) 'enum': param.enumValues,
-                        }
+                        },
                     },
                     'required': [
                       for (final param in tool.parameters)
-                        if (param.required) param.name
+                        if (param.required) param.name,
                     ],
                   },
                 },
@@ -123,5 +115,20 @@ class OpenAiClient implements AiClient {
     } on DioException catch (e) {
       throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
     }
+  }
+
+  @override
+  Future<AiClientResponse> chat({
+    required String prompt,
+    String? system,
+    String model = 'gpt-4.1',
+    String role = 'user',
+    Duration delay = Duration.zero,
+    List<Context>? contexts,
+    List<Tool>? tools,
+    String historyKey = 'default',
+  }) {
+    // TODO: implement chat
+    throw UnimplementedError();
   }
 }

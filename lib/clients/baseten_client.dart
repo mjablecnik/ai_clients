@@ -30,6 +30,7 @@ class BasetenClient implements AiClient {
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
+    String role = 'user',
     List<Context>? contexts,
   }) async {
     await Future.delayed(delay);
@@ -69,9 +70,25 @@ class BasetenClient implements AiClient {
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
+    String role = 'user',
     List<Context>? contexts,
     List<Tool>? tools,
   }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AiClientResponse> chat({
+    required String prompt,
+    String? system,
+    String model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
+    String role = 'user',
+    Duration delay = Duration.zero,
+    List<Context>? contexts,
+    List<Tool>? tools,
+    String historyKey = 'default',
+  }) {
+    // TODO: implement chat
     throw UnimplementedError();
   }
 }

@@ -2,7 +2,7 @@ import 'package:ai_clients/ai_clients.dart';
 
 void main() async {
   var aiClient = AiClients.together();
-  var clientResponse = await aiClient.query(
+  var clientResponse = await aiClient.chat(
     model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
     system: "Jsi AI asistent a komunikuješ v češtině",
     //prompt: "řekni mi vtip",
@@ -26,7 +26,7 @@ void main() async {
     print(response);
 
     if (response.isNotEmpty) {
-      var openAiResponse2 = await aiClient.query(
+      var openAiResponse2 = await aiClient.chat(
         model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         system: "Jsi AI asistent a komunikuješ v češtině",
         prompt: response,
