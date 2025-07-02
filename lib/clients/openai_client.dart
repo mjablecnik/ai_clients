@@ -33,14 +33,14 @@ class OpenAiClient implements AiClient {
     String? system,
     List<Context>? contexts,
     String model = 'gpt-4.1',
+    String role = 'user',
     Duration delay = Duration.zero,
     historyKey = 'simpleQueryHistory',
   }) async {
     await Future.delayed(delay);
-    final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
 
     if (!_history.containsKey(historyKey)) _history[historyKey] = [];
-    _history[historyKey]!.add({'role': 'user', 'content': prompt + contextMessage});
+    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
 
     final data = {
       'model': model,
@@ -72,12 +72,12 @@ class OpenAiClient implements AiClient {
     List<Context>? contexts,
     List<Tool>? tools,
     historyKey = 'queryHistory',
+    String role = 'user',
   }) async {
     await Future.delayed(delay);
-    final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
 
     if (!_history.containsKey(historyKey)) _history[historyKey] = [];
-    _history[historyKey]!.add({'role': 'user', 'content': prompt + contextMessage});
+    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
 
     final messages = [
       if (system != null) {'role': 'system', 'content': system},

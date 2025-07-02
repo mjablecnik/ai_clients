@@ -6,6 +6,9 @@ class TogetherClient implements AiClient {
   final Dio _dio;
   final String _apiKey;
   final String _apiUrl;
+  final Map<String, HistoryChat> _history = {};
+
+  Map<String, HistoryChat> get history => _history;
 
   TogetherClient({String? apiUrl, String? apiKey})
     : _dio = Dio(),
@@ -28,10 +31,15 @@ class TogetherClient implements AiClient {
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
+    String role = 'user',
     List<Context>? contexts,
+    historyKey = 'simpleQueryHistory',
   }) async {
     await Future.delayed(delay);
-    final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
+
+    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
+    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
+
     final data = {
       'model': model,
       'stop': ['</s>', '[/INST]'],
@@ -42,7 +50,7 @@ class TogetherClient implements AiClient {
       'repetition_penalty': 1,
       'messages': [
         if (system != null) {'role': 'system', 'content': system},
-        {'role': 'user', 'content': prompt + contextMessage},
+        ..._history[historyKey]!,
       ],
     };
 
@@ -67,14 +75,17 @@ class TogetherClient implements AiClient {
     String? system,
     List<Context>? contexts,
     List<Tool>? tools,
+    String role = 'user',
     historyKey = 'queryHistory',
   }) async {
     await Future.delayed(delay);
-    final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
+
+    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
+    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
 
     final messages = [
       if (system != null) {'role': 'system', 'content': system},
-      {'role': 'user', 'content': prompt + contextMessage},
+      ..._history[historyKey]!,
     ];
 
     final data = {
@@ -117,7 +128,7 @@ class TogetherClient implements AiClient {
 
     try {
       final response = await _dio.post('/chat/completions', data: data);
-      print(response.data);
+      //print(response.data);
       return AiClientResponse.fromOpenAi(response.data, originalTools: tools ?? []);
     } on DioException catch (e) {
       throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
