@@ -7,12 +7,12 @@ class AiAgent {
   final List<Tool> tools;
   final String description;
 
-  final ChatHistory _history = ChatHistory();
+  final List<Message> _historyMessages = [];
 
   AiAgent({required this.client, required this.description, this.tools = const []});
 
   Future<Message> sendMessage(Message message, {List<Context> context = const []}) async {
-    _history.addMessage(
+    _historyMessages.add(
       Message(
         type: message.type,
         content: buildPrompt(prompt: message.content, contexts: context),
@@ -21,7 +21,7 @@ class AiAgent {
 
     AiClientResponse response = await client.query(
       system: description,
-      history: _history.messages,
+      history: _historyMessages,
       prompt: message.content,
       contexts: context,
       tools: tools,
@@ -32,7 +32,7 @@ class AiAgent {
     final Message responseMessage;
 
     if (response is ToolResponse) {
-      _history.addMessage(Message.assistant(response.rawMessage!));
+      _historyMessages.add(Message.assistant(response.rawMessage!));
 
       for (final tool in response.tools) {
         final value = await tool.call();
@@ -44,30 +44,16 @@ class AiAgent {
       responseMessage = Message.assistant(response.message!);
     }
 
-    _history.addMessage(responseMessage);
+    _historyMessages.add(responseMessage);
 
     return responseMessage;
   }
 
   void clearHistory() {
-    _history.clear();
+    _historyMessages.clear();
   }
 
   void showHistory() {
-    print(_history.messages);
-  }
-}
-
-class ChatHistory {
-  List<Message> messages = [];
-
-  ChatHistory();
-
-  void addMessage(Message message) {
-    messages.add(message);
-  }
-
-  void clear() {
-    messages.clear();
+    print(_historyMessages);
   }
 }
