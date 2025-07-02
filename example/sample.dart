@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:ai_clients/ai_clients.dart';
 import 'package:ai_clients/models/message.dart';
-import 'package:ai_clients/src/ai_agent.dart';
+import 'package:ai_clients/ai_agent.dart';
 
 void main() async {
   final tools = [
