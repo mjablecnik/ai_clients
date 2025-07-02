@@ -1,10 +1,6 @@
 import 'dart:convert';
 import 'package:ai_clients/models/tool.dart';
 
-//import 'package:ai_clients/models/tokens/prompt_tokens_details.dart';
-//import 'package:ai_clients/models/tokens/token_details.dart';
-//import 'package:ai_clients/models/tokens/token_usage.dart';
-
 class AssistantResponse extends AiClientResponse {
   AssistantResponse({required super.id, required super.message, super.role = 'assistant'});
 }
@@ -19,7 +15,6 @@ sealed class AiClientResponse {
   final String? message;
   final String? rawMessage;
 
-  //final TokenUsage tokenUsage;
   final List<Tool> tools;
 
   const AiClientResponse({
@@ -27,7 +22,6 @@ sealed class AiClientResponse {
     required this.role,
     this.message,
     this.rawMessage,
-    //required this.tokenUsage,
     this.tools = const [],
   });
 
@@ -39,7 +33,6 @@ sealed class AiClientResponse {
       final id = json['id'] ?? '';
       final role = messageObj['role'] ?? 'assistant';
       final message = messageObj['content'] ?? '';
-      final usage = json['usage'] ?? {};
 
       // Parse tools if present in the message
       List<Tool> tools = [];
@@ -51,25 +44,6 @@ sealed class AiClientResponse {
           tools.add(tool);
         }
       }
-
-      /*
-      final tokenUsage = TokenUsage(
-        promptTokens: usage['prompt_tokens'] ?? 0,
-        completionTokens: usage['completion_tokens'] ?? 0,
-        totalTokens: usage['total_tokens'] ?? 0,
-        promptTokensDetails: usage['prompt_tokens_details'] != null
-            ? PromptTokensDetails.fromJson(usage['prompt_tokens_details'])
-            : const PromptTokensDetails(cachedTokens: 0, audioTokens: 0),
-        completionTokensDetails: usage['completion_tokens_details'] != null
-            ? TokenDetails.fromJson(usage['completion_tokens_details'])
-            : const TokenDetails(
-          reasoningTokens: 0,
-          audioTokens: 0,
-          acceptedPredictionTokens: 0,
-          rejectedPredictionTokens: 0,
-        ),
-      );
-      */
 
       final finishReason = choices[0]['finish_reason'];
 

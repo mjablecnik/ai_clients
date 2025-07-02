@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:ai_clients/ai_clients.dart';
-import 'package:ai_clients/models/message.dart';
 import 'package:dio/dio.dart';
 
 class TogetherClient implements AiClient {
