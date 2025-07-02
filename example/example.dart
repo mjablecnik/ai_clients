@@ -15,7 +15,7 @@ void main() async {
   print('\nAi Client Response:');
   print(clientResponse);
 
-  if (clientResponse.message.isNotEmpty) {
+  if (clientResponse.message!.isNotEmpty) {
     print('\nResponse:');
     print(clientResponse.message);
   }
