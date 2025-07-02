@@ -121,7 +121,7 @@ class OpenAiClient implements AiClient {
       //print(response.data);
       return AiClientResponse.fromOpenAi(response.data, originalTools: tools ?? []);
     } on DioException catch (e) {
-      throw Exception('Failed to fetch response: ${e.response?.data ?? e.message}');
+      throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
     }
   }
 }
