@@ -27,7 +27,7 @@ void main() async {
 
   if (clientResponse.tools.isNotEmpty) {
     print('\nTool Response:');
-    final response = (await clientResponse.tools.first.call()).toString();
+    final response = await clientResponse.tools.first.call();
     print(response);
 
     if (response.isNotEmpty) {

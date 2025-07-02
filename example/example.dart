@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ai_clients/ai_clients.dart';
 
 void main() async {
@@ -22,7 +24,7 @@ void main() async {
 
   if (clientResponse.tools.isNotEmpty) {
     print('\nTool Response:');
-    final response = clientResponse.tools.first.call().toString();
+    final response = await clientResponse.tools.first.call();
     print(response);
 
     if (response.isNotEmpty) {
@@ -46,14 +48,16 @@ void main() async {
   print(aiClient.history);
 }
 
-Map<String, dynamic> getWeatherInformation(Map<String, dynamic> json) {
-  return {
-    "date": "2025-07-01",
-    "location": "Prague",
-    "temperature": {"min": 18, "max": 27, "unit": "°C"},
-    "weather_condition": "partly cloudy",
-    "precipitation": {"probability": 20, "unit": "%"},
-    "humidity": 65,
-    "wind": {"speed": 12, "direction": "NW", "unit": "km/h"},
-  };
+Future<String> getWeatherInformation(Map<String, dynamic> json) async {
+  return Future.value(
+    jsonEncode({
+      "date": "2025-07-01",
+      "location": "Prague",
+      "temperature": {"min": 18, "max": 27, "unit": "°C"},
+      "weather_condition": "partly cloudy",
+      "precipitation": {"probability": 20, "unit": "%"},
+      "humidity": 65,
+      "wind": {"speed": 12, "direction": "NW", "unit": "km/h"},
+    }),
+  );
 }
