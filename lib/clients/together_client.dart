@@ -67,7 +67,60 @@ class TogetherClient implements AiClient {
     String? system,
     List<Context>? contexts,
     List<Tool>? tools,
-  }) {
-    throw UnimplementedError();
+    historyKey = 'queryHistory',
+  }) async {
+    await Future.delayed(delay);
+    final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
+
+    final messages = [
+      if (system != null) {'role': 'system', 'content': system},
+      {'role': 'user', 'content': prompt + contextMessage},
+    ];
+
+    final data = {
+      'model': model,
+      'stop': ['</s>', '[/INST]'],
+      'max_tokens': 3000,
+      'temperature': 0.7,
+      'top_p': 0.7,
+      'top_k': 50,
+      'repetition_penalty': 1,
+      'messages': messages,
+      if (tools != null && tools.isNotEmpty)
+        'tools': tools
+            .map(
+              (tool) => {
+                'type': 'function',
+                'function': {
+                  'name': tool.name,
+                  'description': tool.description,
+                  'parameters': {
+                    'type': 'object',
+                    'properties': {
+                      for (final param in tool.parameters)
+                        param.name: {
+                          'type': param.type,
+                          'description': param.description,
+                          if (param.enumValues != null) 'enum': param.enumValues,
+                        }
+                    },
+                    'required': [
+                      for (final param in tool.parameters)
+                        if (param.required) param.name
+                    ],
+                  },
+                },
+              },
+            )
+            .toList(),
+    };
+
+    try {
+      final response = await _dio.post('/chat/completions', data: data);
+      print(response.data);
+      return AiClientResponse.fromOpenAi(response.data, originalTools: tools ?? []);
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
+    }
   }
 }
