@@ -34,30 +34,30 @@ void main() async {
   print('\nAi Client Response:');
   print(openAiResponse);
 
-  String response = '';
   if (openAiResponse.message.isNotEmpty) {
-    response = openAiResponse.message;
+    print('\nResponse:');
+    print(openAiResponse.message);
   }
 
   if (openAiResponse.tools.isNotEmpty) {
     print('\nTool Response:');
-    response = openAiResponse.tools.first.call().toString();
+    final response = openAiResponse.tools.first.call().toString();
     print(response);
-  }
 
-  if (response.isNotEmpty) {
-    var openAiResponse2 = await openAiClient.query(
-      system: "Jsi AI asistent a komunikuješ v češtině",
-      //prompt: "řekni mi s čím mi můžeš pomoci",
-      prompt: response,
-      tools: [
-        Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
-      ],
-    );
-    print('\nFinal Response:');
-    print(openAiResponse2.message);
-  } else {
-    print("No response");
+    if (response.isNotEmpty) {
+      var openAiResponse2 = await openAiClient.query(
+        system: "Jsi AI asistent a komunikuješ v češtině",
+        //prompt: "řekni mi s čím mi můžeš pomoci",
+        prompt: response,
+        tools: [
+          Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
+        ],
+      );
+      print('\nFinal Response:');
+      print(openAiResponse2.message);
+    } else {
+      print("No response");
+    }
   }
 }
 
