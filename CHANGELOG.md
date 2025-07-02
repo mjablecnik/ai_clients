@@ -1,3 +1,14 @@
+## 0.4.0
+
+- Added AiAgent class to interact with AI clients
+- Implemented tool calling capabilities in AI agent
+- Added chat history support
+- Made model parameter optional with fallback to class model
+- Renamed 'query' method to 'chat' and added new 'chat' method with history support
+- Simplified TogetherClient chat API
+- Simplified models exports and removed unused token-related models
+- Restructured AiAgent file and exports
+
 ## 0.3.1
 
 - Simplified the prompt building process.
