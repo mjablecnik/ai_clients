@@ -10,10 +10,11 @@ class OpenAiClient implements AiClient {
   final Dio _dio;
   final String _apiKey;
   final String _apiUrl;
-  final Map<String, HistoryChat> _history = {};
+  final String _model;
 
-  OpenAiClient({String? apiUrl, String? apiKey})
+  OpenAiClient({String? apiUrl, String? apiKey, String? model})
     : _dio = Dio(),
+      _model = model ?? 'gpt-4.1',
       _apiUrl = apiUrl ?? 'https://api.openai.com/v1',
       _apiKey = apiKey ?? Platform.environment['OPENAI_API_KEY'] ?? '' {
     if (_apiKey.isEmpty) {
@@ -32,14 +33,14 @@ class OpenAiClient implements AiClient {
     required String prompt,
     String? system,
     List<Context>? contexts,
-    String model = 'gpt-4.1',
+    String? model,
     String role = 'user',
     Duration delay = Duration.zero,
   }) async {
     await Future.delayed(delay);
 
     final data = {
-      'model': model,
+      'model': model ?? _model,
       'messages': [
         if (system != null) {'role': 'developer', 'content': system},
         {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
@@ -63,7 +64,7 @@ class OpenAiClient implements AiClient {
   Future<AiClientResponse> query({
     required String prompt,
     String? system,
-    String model = 'gpt-4.1',
+    String? model,
     Duration delay = Duration.zero,
     List<Context>? contexts,
     List<Tool>? tools,
@@ -77,7 +78,7 @@ class OpenAiClient implements AiClient {
     ];
 
     final data = {
-      'model': model,
+      'model': model ?? _model,
       'messages': messages,
       if (tools != null && tools.isNotEmpty)
         'tools': tools
@@ -121,7 +122,7 @@ class OpenAiClient implements AiClient {
   Future<AiClientResponse> chat({
     required String prompt,
     String? system,
-    String model = 'gpt-4.1',
+    String? model,
     String role = 'user',
     Duration delay = Duration.zero,
     List<Context>? contexts,

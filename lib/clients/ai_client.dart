@@ -1,7 +1,7 @@
 import 'package:ai_clients/models.dart';
 
 abstract class AiClient {
-  AiClient({String? apiUrl, String? apiKey});
+  AiClient({String? apiUrl, String? apiKey, String? model});
 
   Future<String> simpleQuery({
     required String prompt,

@@ -8,9 +8,11 @@ class BasetenClient implements AiClient {
   final Dio _dio;
   final String _apiKey;
   final String _apiUrl;
+  final String _model;
 
-  BasetenClient({String? apiUrl, String? apiKey})
+  BasetenClient({String? apiUrl, String? apiKey, String? model})
     : _dio = Dio(),
+      _model = model ?? 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
       _apiUrl = apiUrl ?? 'https://inference.baseten.co/v1',
       _apiKey = apiKey ?? Platform.environment['BASETEN_API_KEY'] ?? '' {
     if (_apiKey.isEmpty) {
@@ -26,7 +28,7 @@ class BasetenClient implements AiClient {
   /// [model] defaults to 'meta-llama/Llama-4-Maverick-17B-128E-Instruct'.
   @override
   Future<String> simpleQuery({
-    String model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
+    String? model,
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
@@ -36,7 +38,7 @@ class BasetenClient implements AiClient {
     await Future.delayed(delay);
     final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
-      'model': model,
+      'model': model ?? _model,
       "stop": [],
       //"stream": true,
       //"stream_options": {"include_usage": true, "continuous_usage_stats": true},
@@ -66,7 +68,7 @@ class BasetenClient implements AiClient {
 
   @override
   Future<AiClientResponse> query({
-    String model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
+    String? model,
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
@@ -81,7 +83,7 @@ class BasetenClient implements AiClient {
   Future<AiClientResponse> chat({
     required String prompt,
     String? system,
-    String model = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
+    String? model,
     String role = 'user',
     Duration delay = Duration.zero,
     List<Context>? contexts,

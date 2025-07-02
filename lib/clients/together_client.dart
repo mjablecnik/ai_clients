@@ -6,12 +6,14 @@ class TogetherClient implements AiClient {
   final Dio _dio;
   final String _apiKey;
   final String _apiUrl;
+  final String _model;
   final Map<String, HistoryChat> _history = {};
 
   Map<String, HistoryChat> get history => _history;
 
-  TogetherClient({String? apiUrl, String? apiKey})
+  TogetherClient({String? apiUrl, String? apiKey, String? model})
     : _dio = Dio(),
+      _model = model ?? 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
       _apiUrl = apiUrl ?? 'https://api.together.xyz/v1',
       _apiKey = apiKey ?? Platform.environment['TOGETHER_API_KEY'] ?? '' {
     if (_apiKey.isEmpty) {
@@ -27,7 +29,7 @@ class TogetherClient implements AiClient {
   /// [model] defaults to 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free'.
   @override
   Future<String> simpleQuery({
-    String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+    String? model,
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
@@ -38,7 +40,7 @@ class TogetherClient implements AiClient {
     await Future.delayed(delay);
 
     final data = {
-      'model': model,
+      'model': model ?? _model,
       'stop': ['</s>', '[/INST]'],
       'max_tokens': 3000,
       'temperature': 0.7,
@@ -66,7 +68,7 @@ class TogetherClient implements AiClient {
 
   @override
   Future<AiClientResponse> query({
-    String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+    String? model,
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
@@ -82,7 +84,7 @@ class TogetherClient implements AiClient {
     ];
 
     final data = {
-      'model': model,
+      'model': model ?? _model,
       'stop': ['</s>', '[/INST]'],
       'max_tokens': 3000,
       'temperature': 0.7,
@@ -129,7 +131,7 @@ class TogetherClient implements AiClient {
 
   @override
   Future<AiClientResponse> chat({
-    String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+    String? model,
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
@@ -150,7 +152,7 @@ class TogetherClient implements AiClient {
     ];
 
     final data = {
-      'model': model,
+      'model': model ?? _model,
       'stop': ['</s>', '[/INST]'],
       'max_tokens': 3000,
       'temperature': 0.7,

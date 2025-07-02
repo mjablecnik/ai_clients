@@ -12,15 +12,15 @@ export 'utils.dart';
 export 'models.dart';
 
 class AiClients {
-  static OpenAiClient openAi({String? apiUrl, String? apiKey}) {
-    return OpenAiClient(apiUrl: apiUrl, apiKey: apiKey);
+  static OpenAiClient openAi({String? apiUrl, String? apiKey, String? model}) {
+    return OpenAiClient(apiUrl: apiUrl, apiKey: apiKey, model: model);
   }
 
-  static TogetherClient together({String? apiUrl, String? apiKey}) {
-    return TogetherClient(apiUrl: apiUrl, apiKey: apiKey);
+  static TogetherClient together({String? apiUrl, String? apiKey, String? model}) {
+    return TogetherClient(apiUrl: apiUrl, apiKey: apiKey, model: model);
   }
 
-  static BasetenClient baseten({String? apiUrl, String? apiKey}) {
-    return BasetenClient(apiUrl: apiUrl, apiKey: apiKey);
+  static BasetenClient baseten({String? apiUrl, String? apiKey, String? model}) {
+    return BasetenClient(apiUrl: apiUrl, apiKey: apiKey, model: model);
   }
 }
