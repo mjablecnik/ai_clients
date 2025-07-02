@@ -6,32 +6,45 @@ class AiAgent {
   final AiClient client;
   final List<Tool> tools;
   final String description;
-  final bool enableHistory;
 
   final ChatHistory _history = ChatHistory();
 
-  AiAgent({required this.client, required this.description, this.tools = const [], this.enableHistory = true});
+  AiAgent({required this.client, required this.description, this.tools = const []});
 
   Future<Message> sendMessage(Message message, {List<Context> context = const []}) async {
-    if (enableHistory) _history.addMessage(message);
+    _history.addMessage(
+      Message(
+        type: message.type,
+        content: buildPrompt(prompt: message.content, contexts: context),
+      ),
+    );
 
     AiClientResponse response = await client.query(
+      system: description,
+      history: _history.messages,
       prompt: message.content,
       contexts: context,
       tools: tools,
-      system: description,
+      delay: Duration(seconds: 1),
     );
 
-
+    final List<Context> toolCallResults = [];
     final Message responseMessage;
-    switch (response) {
-      case ToolResponse():
-        responseMessage = Message.toolsCall(response.rawMessage!);
-      case AssistantResponse():
-        responseMessage = Message.assistant(response.message!);
+
+    if (response is ToolResponse) {
+      _history.addMessage(Message.assistant(response.rawMessage!));
+
+      for (final tool in response.tools) {
+        final value = await tool.call();
+        toolCallResults.add(Context(name: tool.name, value: value));
+      }
+
+      responseMessage = await sendMessage(Message.toolsCall(''), context: toolCallResults);
+    } else {
+      responseMessage = Message.assistant(response.message!);
     }
 
-    if (enableHistory) _history.addMessage(responseMessage);
+    _history.addMessage(responseMessage);
 
     return responseMessage;
   }

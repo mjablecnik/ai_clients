@@ -1,4 +1,4 @@
-sealed class Message {
+class Message {
   final String type;
   final String content;
 
@@ -9,8 +9,6 @@ sealed class Message {
   factory Message.assistant(String content) => AssistantMessage(content: content);
 
   factory Message.toolsCall(String content) => ToolsCallMessage(content: content);
-
-  factory Message.system(String content) => SystemMessage(content: content);
 
   @override
   String toString() {
@@ -29,8 +27,4 @@ class AssistantMessage extends Message {
 
 class ToolsCallMessage extends Message {
   ToolsCallMessage({required super.content}) : super(type: 'tool');
-}
-
-class SystemMessage extends Message {
-  SystemMessage({required super.content}) : super(type: 'system');
 }

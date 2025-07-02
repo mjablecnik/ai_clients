@@ -5,7 +5,7 @@ String buildPrompt({required String prompt, List<Context>? contexts}) {
   if (contexts != null && contexts.isNotEmpty) {
     for (final context in contexts) {
       sb.writeln('\n');
-      sb.writeln('=========== ${context.name == null ? '' : context.name!.toUpperCase()} CONTEXT ===========');
+      sb.writeln('=========== ${context.name == null ? '' : context.name!} CONTEXT ===========');
       sb.writeln(context.value);
       sb.writeln('=============================');
     }

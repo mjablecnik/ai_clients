@@ -22,8 +22,8 @@ class Tool {
     'parameters': parameters.map((p) => p.toJson()).toList(),
   };
 
-  dynamic call() {
-    return function(arguments);
+  Future<String> call() async {
+    return await function(arguments);
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:ai_clients/ai_clients.dart';
+import 'package:ai_clients/models/message.dart';
 import 'package:dio/dio.dart';
 
 class TogetherClient implements AiClient {
@@ -70,6 +71,7 @@ class TogetherClient implements AiClient {
   Future<AiClientResponse> query({
     String? model,
     Duration delay = Duration.zero,
+    List<Message> history = const [],
     required String prompt,
     String? system,
     List<Context>? contexts,
@@ -80,6 +82,7 @@ class TogetherClient implements AiClient {
 
     final messages = [
       if (system != null) {'role': 'system', 'content': system},
+      ...history.map((message) => {'role': message.type, 'content': message.content}),
       {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
     ];
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:ai_clients/clients/ai_client.dart';
 import 'package:ai_clients/models.dart';
+import 'package:ai_clients/models/message.dart';
 import 'package:ai_clients/utils.dart';
 import 'package:dio/dio.dart';
 
@@ -63,6 +64,7 @@ class OpenAiClient implements AiClient {
   @override
   Future<AiClientResponse> query({
     required String prompt,
+    List<Message> history = const [],
     String? system,
     String? model,
     Duration delay = Duration.zero,
