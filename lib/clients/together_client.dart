@@ -37,9 +37,6 @@ class TogetherClient implements AiClient {
   }) async {
     await Future.delayed(delay);
 
-    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
-    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
-
     final data = {
       'model': model,
       'stop': ['</s>', '[/INST]'],
@@ -50,7 +47,7 @@ class TogetherClient implements AiClient {
       'repetition_penalty': 1,
       'messages': [
         if (system != null) {'role': 'system', 'content': system},
-        ..._history[historyKey]!,
+        {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
       ],
     };
 
@@ -58,7 +55,6 @@ class TogetherClient implements AiClient {
       final response = await _dio.post('/chat/completions', data: data);
       final choices = response.data['choices'];
       if (choices != null && choices.isNotEmpty) {
-        _history[historyKey]!.add(choices[0]['message']);
         return choices[0]['message']['content'] as String;
       } else {
         throw Exception('No response from ChatGPT API.');
@@ -77,17 +73,12 @@ class TogetherClient implements AiClient {
     List<Context>? contexts,
     List<Tool>? tools,
     String role = 'user',
-    historyKey = 'queryHistory',
   }) async {
     await Future.delayed(delay);
 
-    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
-    if (system != null && _history[historyKey]!.isEmpty) _history[historyKey]!.add({'role': 'system', 'content': system});
-    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
-
     final messages = [
       if (system != null) {'role': 'system', 'content': system},
-      ..._history[historyKey]!,
+      {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
     ];
 
     final data = {
@@ -125,6 +116,74 @@ class TogetherClient implements AiClient {
                 },
               },
             )
+            .toList(),
+    };
+
+    try {
+      final response = await _dio.post('/chat/completions', data: data);
+      return AiClientResponse.fromOpenAi(response.data, originalTools: tools ?? []);
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
+    }
+  }
+
+  @override
+  Future<AiClientResponse> chat({
+    String model = 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+    Duration delay = Duration.zero,
+    required String prompt,
+    String? system,
+    List<Context>? contexts,
+    List<Tool>? tools,
+    String role = 'user',
+    historyKey = 'default',
+  }) async {
+    await Future.delayed(delay);
+
+    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
+    if (system != null && _history[historyKey]!.isEmpty) _history[historyKey]!.add({'role': 'system', 'content': system});
+    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
+
+    final messages = [
+      if (system != null) {'role': 'system', 'content': system},
+      ..._history[historyKey]!,
+    ];
+
+    final data = {
+      'model': model,
+      'stop': ['</s>', '[/INST]'],
+      'max_tokens': 3000,
+      'temperature': 0.7,
+      'top_p': 0.7,
+      'top_k': 50,
+      'repetition_penalty': 1,
+      'messages': messages,
+      if (tools != null && tools.isNotEmpty)
+        'tools': tools
+            .map(
+              (tool) => {
+            'type': 'function',
+            'function': {
+              'name': tool.name,
+              'description': tool.description,
+              'parameters': {
+                'type': 'object',
+                'properties': {
+                  for (final param in tool.parameters)
+                    param.name: {
+                      'type': param.type,
+                      'description': param.description,
+                      if (param.enumValues != null) 'enum': param.enumValues,
+                    }
+                },
+                'required': [
+                  for (final param in tool.parameters)
+                    if (param.required) param.name
+                ],
+              },
+            },
+          },
+        )
             .toList(),
     };
 
