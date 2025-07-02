@@ -1,28 +1,10 @@
 import 'package:ai_clients/ai_clients.dart';
 
 void main() async {
-  const prompt = 'Hello, how are you?';
-
-  /*
-  // BasetenClient example
-  var basetenClient = AiClients.baseten();
-  var basetenResponse = await basetenClient.simpleQuery(prompt: prompt);
-  print('BasetenClient response: $basetenResponse');
-
   // OpenAiClient example
-  var openAiClient = AiClients.openAi();
-  var openAiResponse = await openAiClient.simpleQuery(prompt: prompt);
-  print('OpenAiClient response: $openAiResponse');
-
-  // TogetherClient example
-  var togetherClient = AiClients.together();
-  var togetherResponse = await togetherClient.simpleQuery(prompt: prompt);
-  print('TogetherClient response: $togetherResponse');
-   */
-
-  // OpenAiClient example
-  var openAiClient = AiClients.openAi();
+  var openAiClient = AiClients.together();
   var openAiResponse = await openAiClient.query(
+    model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
     system: "Jsi AI asistent a komunikuješ v češtině",
     //prompt: "řekni mi s čím mi můžeš pomoci",
     prompt: "řekni mi jaké je teď počasí",
@@ -46,9 +28,10 @@ void main() async {
 
     if (response.isNotEmpty) {
       var openAiResponse2 = await openAiClient.query(
+        model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         system: "Jsi AI asistent a komunikuješ v češtině",
-        //prompt: "řekni mi s čím mi můžeš pomoci",
         prompt: response,
+        role: 'tool',
         tools: [
           Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
         ],
@@ -59,6 +42,11 @@ void main() async {
       print("No response");
     }
   }
+
+
+  print('\nChat history:');
+  print(openAiClient.history);
+
 }
 
 Map<String, dynamic> getWeatherInformation(Map<String, dynamic> json) {
