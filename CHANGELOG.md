@@ -1,3 +1,9 @@
+## 0.5.0
+
+- Removed chat method from AI clients.
+- Added configurable delay for AI clients.
+- Refactored code.
+
 ## 0.4.0
 
 - Added AiAgent class to interact with AI clients
