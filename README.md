@@ -24,7 +24,7 @@ Add `ai_clients` to your `pubspec.yaml` dependencies:
 
 ```yaml
 dependencies:
-  ai_clients: ^0.4.0
+  ai_clients: ^0.5.0
 ```
 
 Then run:
@@ -39,7 +39,7 @@ dart pub get
 
 Import the package and create an instance of the desired client. Each client requires an API key, which can be provided as a constructor argument or via environment variable.
 
-### Basic Usage
+### Using AiClient
 
 ```dart
 import 'package:ai_clients/ai_clients.dart';
@@ -49,63 +49,12 @@ void main() async {
   var client = AiClients.together(); // Uses TOGETHER_API_KEY from env by default
   
   // Simple chat with the model
-  var response = await client.chat(
+  var response = await client.query(
+    system: 'You are a helpful assistant',
     prompt: 'Hello, how are you?',
-    system: 'You are a helpful assistant',
   );
   
   print(response.message);
-  
-  // Access chat history
-  print(client.history);
-}
-```
-
-### Using Tools
-
-```dart
-import 'package:ai_clients/ai_clients.dart';
-import 'dart:convert';
-
-void main() async {
-  var client = AiClients.together();
-  
-  var response = await client.chat(
-    prompt: 'What is the weather like today?',
-    system: 'You are a helpful assistant',
-    tools: [
-      Tool(
-        name: 'getWeatherInformation',
-        description: 'Gets weather information',
-        function: getWeatherInformation,
-      ),
-    ],
-  );
-  
-  print(response.message);
-  
-  // If the model wants to use a tool
-  if (response.tools.isNotEmpty) {
-    // Execute the tool
-    final toolResponse = await response.tools.first.call();
-    
-    // Send the tool response back to the model
-    var finalResponse = await client.chat(
-      prompt: toolResponse,
-      role: 'tool',
-    );
-    
-    print(finalResponse.message);
-  }
-}
-
-Future<String> getWeatherInformation(Map<String, dynamic> args) {
-  // Implementation of the weather function
-  return jsonEncode({
-    'location': 'Prague',
-    'temperature': 25,
-    'condition': 'Sunny',
-  });
 }
 ```
 
@@ -153,6 +102,7 @@ All clients implement the following interface:
 // Simple query that returns just a string response
 Future<String> simpleQuery({
   required String prompt,
+  List<Message> history = const [],
   String? system,
   List<Context>? contexts,
   String model,
@@ -181,7 +131,6 @@ Future<AiClientResponse> query({
 - **delay**: (Optional) Delay before sending the request.
 - **tools**: (Optional) List of tools the model can use.
 - **history**: (Optional) List of previous messages for conversation context.
-- **historyKey**: (Optional) Key to store conversation history (for chat method).
 
 ### AiAgent Class
 
