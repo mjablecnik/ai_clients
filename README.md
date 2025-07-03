@@ -171,18 +171,6 @@ Future<AiClientResponse> query({
   List<Context>? contexts,
   List<Tool>? tools,
 });
-
-// Chat with built-in history management
-Future<AiClientResponse> chat({
-  required String prompt,
-  String? system,
-  String model,
-  String role = 'user',
-  Duration delay = Duration.zero,
-  List<Context>? contexts,
-  List<Tool>? tools,
-  String historyKey = 'default',
-});
 ```
 
 - **prompt**: The user message to send to the model.
