@@ -13,7 +13,7 @@ class OpenAiClient extends AiClient {
   final String _apiUrl;
   final String _model;
 
-  OpenAiClient({String? apiUrl, String? apiKey, String? model})
+  OpenAiClient({String? apiUrl, String? apiKey, String? model, super.delay})
     : _dio = Dio(),
       _model = model ?? 'gpt-4.1',
       _apiUrl = apiUrl ?? 'https://api.openai.com/v1',
@@ -32,12 +32,12 @@ class OpenAiClient extends AiClient {
     List<Message> history = const [],
     String? system,
     String? model,
-    Duration delay = Duration.zero,
+    Duration? delay,
     List<Context>? contexts,
     List<Tool>? tools,
     String role = 'user',
   }) async {
-    await Future.delayed(delay);
+    await Future.delayed(delay ?? this.delay);
 
     final data = _buildDataObject(
       model: model ?? _model,

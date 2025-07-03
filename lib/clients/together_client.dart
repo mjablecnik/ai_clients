@@ -12,7 +12,7 @@ class TogetherClient extends AiClient {
 
   Map<String, HistoryChat> get history => _history;
 
-  TogetherClient({String? apiUrl, String? apiKey, String? model})
+  TogetherClient({String? apiUrl, String? apiKey, String? model, super.delay})
     : _dio = Dio(),
       _model = model ?? 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
       _apiUrl = apiUrl ?? 'https://api.together.xyz/v1',
@@ -28,7 +28,7 @@ class TogetherClient extends AiClient {
   @override
   Future<AiClientResponse> query({
     String? model,
-    Duration delay = Duration.zero,
+    Duration? delay,
     List<Message> history = const [],
     required String prompt,
     String? system,
@@ -36,7 +36,7 @@ class TogetherClient extends AiClient {
     List<Tool> tools = const [],
     String role = 'user',
   }) async {
-    await Future.delayed(delay);
+    await Future.delayed(delay ?? this.delay);
 
     final data = _buildDataObject(
       model: model ?? _model,

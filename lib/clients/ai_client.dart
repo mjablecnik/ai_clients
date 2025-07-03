@@ -1,12 +1,14 @@
 import 'package:ai_clients/models.dart';
 
 abstract class AiClient {
-  AiClient({String? apiUrl, String? apiKey, String? model});
+  final Duration delay;
+
+  AiClient({String? apiUrl, String? apiKey, String? model, this.delay = const Duration(milliseconds: 300)});
 
   Future<String> simpleQuery({
     String? model,
     List<Message> history = const [],
-    Duration delay = Duration.zero,
+    Duration? delay,
     required String prompt,
     String? system,
     String role = 'user',
@@ -30,7 +32,7 @@ abstract class AiClient {
     String? system,
     String? model,
     String role = 'user',
-    Duration delay = Duration.zero,
+    Duration? delay,
     List<Context>? contexts,
     List<Tool> tools = const [],
   });

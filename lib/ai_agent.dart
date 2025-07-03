@@ -23,7 +23,7 @@ class AiAgent {
       prompt: message.content,
       contexts: context,
       tools: tools,
-      delay: Duration(seconds: 1),
+      delay: client.delay,
     );
 
     final List<Context> toolCallResults = [];

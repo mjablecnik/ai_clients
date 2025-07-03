@@ -10,7 +10,7 @@ class BasetenClient extends AiClient {
   final String _apiUrl;
   final String _model;
 
-  BasetenClient({String? apiUrl, String? apiKey, String? model})
+  BasetenClient({String? apiUrl, String? apiKey, String? model, super.delay})
     : _dio = Dio(),
       _model = model ?? 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
       _apiUrl = apiUrl ?? 'https://inference.baseten.co/v1',
@@ -27,13 +27,13 @@ class BasetenClient extends AiClient {
   Future<String> simpleQuery({
     String? model,
     List<Message> history = const [],
-    Duration delay = Duration.zero,
+    Duration? delay,
     required String prompt,
     String? system,
     String role = 'user',
     List<Context>? contexts,
   }) async {
-    await Future.delayed(delay);
+    await Future.delayed(delay ?? this.delay);
     final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model ?? _model,
@@ -68,7 +68,7 @@ class BasetenClient extends AiClient {
   @override
   Future<AiClientResponse> query({
     String? model,
-    Duration delay = Duration.zero,
+    Duration? delay,
     List<Message> history = const [],
     required String prompt,
     String? system,
