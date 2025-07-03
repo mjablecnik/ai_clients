@@ -4,33 +4,34 @@ abstract class AiClient {
   AiClient({String? apiUrl, String? apiKey, String? model});
 
   Future<String> simpleQuery({
+    String? model,
+    List<Message> history = const [],
+    Duration delay = Duration.zero,
     required String prompt,
     String? system,
-    List<Context>? contexts,
-    String model,
     String role = 'user',
-    Duration delay = Duration.zero,
-  });
+    List<Context>? contexts,
+  }) async {
+    final result = await query(
+      model: model,
+      delay: delay,
+      history: history,
+      prompt: prompt,
+      system: system,
+      contexts: contexts,
+      role: role,
+    );
+    return result.message!;
+  }
 
   Future<AiClientResponse> query({
     required String prompt,
     List<Message> history = const [],
     String? system,
-    String model,
+    String? model,
     String role = 'user',
     Duration delay = Duration.zero,
     List<Context>? contexts,
-    List<Tool>? tools,
-  });
-
-  Future<AiClientResponse> chat({
-    required String prompt,
-    String? system,
-    String model,
-    String role = 'user',
-    Duration delay = Duration.zero,
-    List<Context>? contexts,
-    List<Tool>? tools,
-    String historyKey = 'default',
+    List<Tool> tools = const [],
   });
 }

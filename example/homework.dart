@@ -8,7 +8,7 @@ void main() async {
   ];
 
   var aiClient = AiClients.together();
-  var clientResponse = await aiClient.chat(
+  var clientResponse = await aiClient.query(
     model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
     system: "Jsi AI asistent a komunikuješ v češtině",
     //prompt: "řekni mi vtip",
@@ -31,7 +31,7 @@ void main() async {
     print(response);
 
     if (response.isNotEmpty) {
-      var clientResponse2 = await aiClient.chat(
+      var clientResponse2 = await aiClient.query(
         model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         system: "Jsi AI asistent a komunikuješ v češtině",
         prompt: response,

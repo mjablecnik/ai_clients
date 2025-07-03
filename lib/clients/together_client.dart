@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:ai_clients/ai_clients.dart';
 import 'package:dio/dio.dart';
 
-class TogetherClient implements AiClient {
+class TogetherClient extends AiClient {
   final Dio _dio;
   final String _apiKey;
   final String _apiUrl;
@@ -24,48 +25,6 @@ class TogetherClient implements AiClient {
     _dio.options.headers['Content-Type'] = 'application/json';
   }
 
-  /// Sends a prompt to the Together API and returns the response text.
-  /// [prompt] is the user's message.
-  /// [model] defaults to 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free'.
-  @override
-  Future<String> simpleQuery({
-    String? model,
-    Duration delay = Duration.zero,
-    required String prompt,
-    String? system,
-    String role = 'user',
-    List<Context>? contexts,
-    historyKey = 'simpleQueryHistory',
-  }) async {
-    await Future.delayed(delay);
-
-    final data = {
-      'model': model ?? _model,
-      'stop': ['</s>', '[/INST]'],
-      'max_tokens': 3000,
-      'temperature': 0.7,
-      'top_p': 0.7,
-      'top_k': 50,
-      'repetition_penalty': 1,
-      'messages': [
-        if (system != null) {'role': 'system', 'content': system},
-        {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
-      ],
-    };
-
-    try {
-      final response = await _dio.post('/chat/completions', data: data);
-      final choices = response.data['choices'];
-      if (choices != null && choices.isNotEmpty) {
-        return choices[0]['message']['content'] as String;
-      } else {
-        throw Exception('No response from ChatGPT API.');
-      }
-    } on DioException catch (e) {
-      throw Exception('Failed to fetch response: ${e.response?.data ?? e.message}');
-    }
-  }
-
   @override
   Future<AiClientResponse> query({
     String? model,
@@ -74,11 +33,38 @@ class TogetherClient implements AiClient {
     required String prompt,
     String? system,
     List<Context>? contexts,
-    List<Tool>? tools,
+    List<Tool> tools = const [],
     String role = 'user',
   }) async {
     await Future.delayed(delay);
 
+    final data = _buildDataObject(
+      model: model ?? _model,
+      tools: tools,
+      system: system,
+      contexts: contexts,
+      history: history,
+      prompt: prompt,
+      role: role,
+    );
+
+    try {
+      final response = await _dio.post('/chat/completions', data: data);
+      return _parseResponse(response.data, originalTools: tools);
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
+    }
+  }
+
+  Map<String, dynamic> _buildDataObject({
+    List<Tool>? tools,
+    String? system,
+    List<Context>? contexts,
+    List<Message> history = const [],
+    required String model,
+    required String prompt,
+    required String role,
+  }) {
     final messages = [
       if (system != null) {'role': 'system', 'content': system},
       ...history.map((message) => {'role': message.type, 'content': message.content}),
@@ -86,7 +72,7 @@ class TogetherClient implements AiClient {
     ];
 
     final data = {
-      'model': model ?? _model,
+      'model': model,
       'stop': ['</s>', '[/INST]'],
       'max_tokens': 3000,
       'temperature': 0.7,
@@ -94,116 +80,71 @@ class TogetherClient implements AiClient {
       'top_k': 50,
       'repetition_penalty': 1,
       'messages': messages,
-      if (tools != null && tools.isNotEmpty)
-        'tools': tools
-            .map(
-              (tool) => {
-                'type': 'function',
-                'function': {
-                  'name': tool.name,
-                  'description': tool.description,
-                  'parameters': {
-                    'type': 'object',
-                    'properties': {
-                      for (final param in tool.parameters)
-                        param.name: {
-                          'type': param.type,
-                          'description': param.description,
-                          if (param.enumValues != null) 'enum': param.enumValues,
-                        }
-                    },
-                    'required': [
-                      for (final param in tool.parameters)
-                        if (param.required) param.name
-                    ],
-                  },
-                },
-              },
-            )
-            .toList(),
+      if (tools != null && tools.isNotEmpty) 'tools': _buildToolsObject(tools),
     };
-
-    try {
-      final response = await _dio.post('/chat/completions', data: data);
-      return AiClientResponse.fromOpenAi(response.data, originalTools: tools ?? []);
-    } on DioException catch (e) {
-      throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
-    }
+    return data;
   }
 
-  @override
-  Future<AiClientResponse> chat({
-    String? model,
-    Duration delay = Duration.zero,
-    required String prompt,
-    String? system,
-    List<Context>? contexts,
-    List<Tool>? tools,
-    String role = 'user',
-    historyKey = 'default',
-  }) async {
-    await Future.delayed(delay);
-
-    if (!_history.containsKey(historyKey)) _history[historyKey] = [];
-    if (system != null && _history[historyKey]!.isEmpty) _history[historyKey]!.add({'role': 'system', 'content': system});
-    _history[historyKey]!.add({'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)});
-
-    final messages = [
-      if (system != null) {'role': 'system', 'content': system},
-      ..._history[historyKey]!,
-    ];
-
-    final data = {
-      'model': model ?? _model,
-      'stop': ['</s>', '[/INST]'],
-      'max_tokens': 3000,
-      'temperature': 0.7,
-      'top_p': 0.7,
-      'top_k': 50,
-      'repetition_penalty': 1,
-      'messages': messages,
-      if (tools != null && tools.isNotEmpty)
-        'tools': tools
-            .map(
-              (tool) => {
-            'type': 'function',
-            'function': {
-              'name': tool.name,
-              'description': tool.description,
-              'parameters': {
-                'type': 'object',
-                'properties': {
-                  for (final param in tool.parameters)
-                    param.name: {
-                      'type': param.type,
-                      'description': param.description,
-                      if (param.enumValues != null) 'enum': param.enumValues,
-                    }
-                },
-                'required': [
-                  for (final param in tool.parameters)
-                    if (param.required) param.name
-                ],
+  List<Map<String, dynamic>> _buildToolsObject(List<Tool> tools) {
+    return [
+      ...tools.map(
+        (tool) => {
+          'type': 'function',
+          'function': {
+            'name': tool.name,
+            'description': tool.description,
+            'parameters': {
+              'type': 'object',
+              'properties': {
+                for (final param in tool.parameters)
+                  param.name: {
+                    'type': param.type,
+                    'description': param.description,
+                    if (param.enumValues != null) 'enum': param.enumValues,
+                  },
               },
+              'required': [
+                for (final param in tool.parameters)
+                  if (param.required) param.name,
+              ],
             },
           },
-        )
-            .toList(),
-    };
+        },
+      ),
+    ];
+  }
 
-    try {
-      final response = await _dio.post('/chat/completions', data: data);
-      //print(response.data);
+  AiClientResponse _parseResponse(Map<String, dynamic> json, {required List<Tool> originalTools}) {
+    final choices = json['choices'];
+    if (choices != null && choices.isNotEmpty) {
+      final choice = choices[0];
+      final messageObj = choice['message'] ?? {};
+      final id = json['id'] ?? '';
+      final role = messageObj['role'] ?? 'assistant';
+      final message = messageObj['content'] ?? '';
 
-      final choices = response.data['choices'];
-      print(choices[0]['message']);
-      if (choices != null && choices.isNotEmpty && choices[0]['message'] != null) {
-        _history[historyKey]!.add({...choices[0]['message']});
+      // Parse tools if present in the message
+      List<Tool> tools = [];
+      if (messageObj['tool_calls'] != null && messageObj['tool_calls'] is List) {
+        for (var t in (messageObj['tool_calls'] as List)) {
+          final name = (t as Map<String, dynamic>)['function']['name'];
+          final tool = originalTools.firstWhere((tool) => tool.name == name);
+          tool.arguments = jsonDecode(t['function']['arguments']);
+          tools.add(tool);
+        }
       }
 
-      return AiClientResponse.fromOpenAi(response.data, originalTools: tools ?? []);
-    } on DioException catch (e) {
-      throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
+      final finishReason = choices[0]['finish_reason'];
+
+      if (finishReason == 'tool_calls') {
+        return ToolResponse(id: id, tools: tools, rawMessage: jsonEncode(messageObj['tool_calls']));
+      } else if (finishReason == 'stop') {
+        return AssistantResponse(id: id, message: message);
+      } else {
+        throw Exception('Unknown response role: $role.');
+      }
+    } else {
+      throw Exception('No response from ChatGPT API.');
     }
   }
 }

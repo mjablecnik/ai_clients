@@ -4,7 +4,7 @@ import 'package:ai_clients/models.dart';
 import 'package:ai_clients/utils.dart';
 import 'package:dio/dio.dart';
 
-class BasetenClient implements AiClient {
+class BasetenClient extends AiClient {
   final Dio _dio;
   final String _apiKey;
   final String _apiUrl;
@@ -23,12 +23,10 @@ class BasetenClient implements AiClient {
     _dio.options.headers['Content-Type'] = 'application/json';
   }
 
-  /// Sends a prompt to the Llama API and returns the response text.
-  /// [prompt] is the user's message.
-  /// [model] defaults to 'meta-llama/Llama-4-Maverick-17B-128E-Instruct'.
   @override
   Future<String> simpleQuery({
     String? model,
+    List<Message> history = const [],
     Duration delay = Duration.zero,
     required String prompt,
     String? system,
@@ -49,6 +47,7 @@ class BasetenClient implements AiClient {
       "frequency_penalty": 1,
       'messages': [
         if (system != null) {'role': 'system', 'content': system},
+        ...history.map((message) => {'role': message.type, 'content': message.content}),
         {'role': 'user', 'content': prompt + contextMessage},
       ],
     };
@@ -77,21 +76,6 @@ class BasetenClient implements AiClient {
     List<Context>? contexts,
     List<Tool>? tools,
   }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AiClientResponse> chat({
-    required String prompt,
-    String? system,
-    String? model,
-    String role = 'user',
-    Duration delay = Duration.zero,
-    List<Context>? contexts,
-    List<Tool>? tools,
-    String historyKey = 'default',
-  }) {
-    // TODO: implement chat
     throw UnimplementedError();
   }
 }
