@@ -1,3 +1,8 @@
+## [Unreleased]
+
+- Added EvaluationAgent for assessing AI response qualit.
+- Reorganized exports.
+
 ## 0.5.0
 
 - Removed chat method from AI clients.
