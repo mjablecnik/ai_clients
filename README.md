@@ -2,13 +2,13 @@
 
 [![pub package](https://img.shields.io/pub/v/ai_clients.svg)](https://pub.dev/packages/ai_clients)
 
-A Dart package providing a unified interface for interacting with various AI models (OpenAI, Baseten, Together) through simple, consistent clients.
+A Dart package providing a unified interface for interacting with various AI models (OpenAI, Baseten, Together, Gemini) through simple, consistent clients.
 
 ---
 
 ## Features
 
-- Unified interface for multiple AI providers (OpenAI, Baseten, Together)
+- Unified interface for multiple AI providers (OpenAI, Baseten, Together, Gemini)
 - Simple, async API for chat/completion models
 - Easy integration with your Dart or Flutter projects
 - Supports custom API endpoints and models
@@ -158,6 +158,7 @@ Future<Message> sendMessage(
 ### API Key Environment Variables
 
 - **BasetenClient**: `BASETEN_API_KEY`
+- **GeminiClient**: `GEMINI_API_KEY`
 - **OpenAiClient**: `OPENAI_API_KEY`
 - **TogetherClient**: `TOGETHER_API_KEY`
 
@@ -168,6 +169,7 @@ You can also pass the API key directly to the client constructor.
 ## Available Clients
 
 - `BasetenClient` (default model: `meta-llama/Llama-4-Maverick-17B-128E-Instruct`)
+- `GeminiClient` (default model: `gemini-1.5-pro`)
 - `OpenAiClient` (default model: `gpt-4.1`)
 - `TogetherClient` (default model: `meta-llama/Llama-3.3-70B-Instruct-Turbo-Free`)
 
