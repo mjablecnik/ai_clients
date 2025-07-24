@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ai_clients/ai_clients.dart';
 
 class AiAgent {
@@ -30,10 +32,15 @@ class AiAgent {
     final Message responseMessage;
 
     if (response is ToolResponse) {
-      _historyMessages.add(Message.assistant(response.rawMessage!));
+      addIntoHistory(Message.assistant(response.rawMessage!));
 
-      for (final tool in response.tools) {
-        final value = await tool.call();
+      final toolCalls = (jsonDecode(response.rawMessage!) as List);
+      for (final toolCall in toolCalls) {
+        final function = toolCall['function'];
+        final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
+        final tool = tools.firstWhere((tool) => tool.name == function['name']);
+
+        final value = await tool.call(arguments);
         toolCallResults.add(Context(name: tool.name, value: value));
       }
 
@@ -42,9 +49,15 @@ class AiAgent {
       responseMessage = Message.assistant(response.message!);
     }
 
-    _historyMessages.add(responseMessage);
+    addIntoHistory(responseMessage);
 
     return responseMessage;
+  }
+
+
+  void addIntoHistory(Message message) {
+    _historyMessages.add(message);
+    //print(message);
   }
 
   void clearHistory() {

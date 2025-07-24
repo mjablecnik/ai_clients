@@ -1,7 +1,7 @@
 import 'package:ai_clients/models.dart';
 
 abstract class AiClient {
-  final Duration delay;
+  final Duration? delay;
 
   AiClient({String? apiUrl, String? apiKey, String? model, this.delay = const Duration(milliseconds: 300)});
 

@@ -37,7 +37,7 @@ class OpenAiClient extends AiClient {
     List<Tool>? tools,
     String role = 'user',
   }) async {
-    await Future.delayed(delay ?? this.delay);
+    await Future.delayed(delay ?? this.delay ?? const Duration(milliseconds: 300));
 
     final data = _buildDataObject(
       model: model ?? _model,
@@ -124,7 +124,7 @@ class OpenAiClient extends AiClient {
         for (var t in (messageObj['tool_calls'] as List)) {
           final name = (t as Map<String, dynamic>)['function']['name'];
           final tool = originalTools.firstWhere((tool) => tool.name == name);
-          tool.arguments = jsonDecode(t['function']['arguments']);
+          //tool.arguments = jsonDecode(t['function']['arguments']);
           tools.add(tool);
         }
       }

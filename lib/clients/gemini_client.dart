@@ -33,7 +33,7 @@ class GeminiClient extends AiClient {
     List<Tool> tools = const [],
     String role = 'user',
   }) async {
-    await Future.delayed(delay ?? this.delay);
+    await Future.delayed(delay ?? this.delay ?? const Duration(milliseconds: 300));
 
     final data = _buildDataObject(
       model: model ?? _model,
@@ -200,8 +200,8 @@ class GeminiClient extends AiClient {
                 orElse: () => throw Exception('Tool not found: $name'));
             
             // Parse arguments
-            final args = functionCall['args'] ?? {};
-            tool.arguments = args;
+            //final args = functionCall['args'] ?? {};
+            //tool.arguments = args;
             tools.add(tool);
           }
         }

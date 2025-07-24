@@ -33,7 +33,7 @@ class BasetenClient extends AiClient {
     String role = 'user',
     List<Context>? contexts,
   }) async {
-    await Future.delayed(delay ?? this.delay);
+    await Future.delayed(delay ?? this.delay ?? const Duration(milliseconds: 300));
     final contextMessage = buildPrompt(prompt: prompt, contexts: contexts);
     final data = {
       'model': model ?? _model,
