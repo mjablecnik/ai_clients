@@ -11,7 +11,7 @@ class Message {
 
   factory Message.toolCall(String content) => ToolCallMessage(content: content);
 
-  factory Message.toolResult(String id, String content) => ToolResultMessage(id: id, content: content);
+  factory Message.toolResult(String? id, String content) => ToolResultMessage(id: id, content: content);
 
   @override
   String toString() {

@@ -3,16 +3,22 @@ import 'dart:convert';
 import 'package:ai_clients/ai_clients.dart';
 
 void main() async {
+  final List<Message> history = [];
   final tools = [
     Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
   ];
 
   var aiClient = AiClients.together();
+
+  final message = Message.user("řekni mi jaké je teď počasí");
+  history.add(message);
+  print('\nUser request:');
+  print(message.content);
+
   var clientResponse = await aiClient.query(
     model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
     system: "Jsi AI asistent a komunikuješ v češtině",
-    //prompt: "řekni mi vtip",
-    prompt: "řekni mi jaké je teď počasí",
+    message: message,
     tools: tools,
   );
 
@@ -23,9 +29,13 @@ void main() async {
   if (clientResponse.message != null && clientResponse.message!.isNotEmpty) {
     print('\nResponse:');
     print(clientResponse.message);
+
+    history.add(Message.assistant(clientResponse.message!));
   }
 
   if (clientResponse.tools.isNotEmpty) {
+    history.add(Message.assistant(jsonEncode(clientResponse.tools)));
+
     print('\nTool Response:');
     final response = await clientResponse.tools.first.call({});
     print(response);
@@ -34,19 +44,22 @@ void main() async {
       var clientResponse2 = await aiClient.query(
         model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         system: "Jsi AI asistent a komunikuješ v češtině",
-        prompt: response,
-        role: 'tool',
+        message: Message.toolResult(null, response),
+        history: history,
         tools: tools,
       );
+      history.add(Message.toolResult(null, response));
+
       print('\nFinal Response:');
       print(clientResponse2.message);
+      history.add(Message.assistant(clientResponse2.message!));
     } else {
       print("No response");
     }
   }
 
   print('\nChat history:');
-  print(aiClient.history);
+  print(history);
 }
 
 Future<String> getWeatherInformation(Map<String, dynamic> json) async {
