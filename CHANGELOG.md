@@ -5,6 +5,7 @@
 - Reorganized exports.
 - Added support for MCP client.
 - Fixed tool calling with arguments.
+- Added Message object into query method of all AI clients.
 
 ## 0.5.0
 
