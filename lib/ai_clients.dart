@@ -5,6 +5,8 @@ export 'clients.dart';
 export 'models.dart';
 export 'utils.dart';
 
+export 'mcp/ai_mcp_client.dart';
+
 import 'clients/baseten_client.dart';
 import 'clients/gemini_client.dart';
 import 'clients/openai_client.dart';
