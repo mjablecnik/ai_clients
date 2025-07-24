@@ -13,6 +13,9 @@ A Dart package providing a unified interface for interacting with various AI mod
 - Easy integration with your Dart or Flutter projects
 - Supports custom API endpoints and models
 - Extensible: add your own AI client by implementing the interface
+- Tool calling support for AI agents
+- Evaluation capabilities for assessing AI response quality
+- MCP (Model Context Protocol) client support
 
 ---
 
@@ -24,7 +27,7 @@ Add `ai_clients` to your `pubspec.yaml` dependencies:
 
 ```yaml
 dependencies:
-  ai_clients: ^0.5.0
+  ai_clients: ^0.6.0
 ```
 
 Then run:
@@ -48,13 +51,21 @@ void main() async {
   // Create a client
   var client = AiClients.together(); // Uses TOGETHER_API_KEY from env by default
   
-  // Simple chat with the model
-  var response = await client.query(
+  // Simple query with the model
+  var response = await client.simpleQuery(
     system: 'You are a helpful assistant',
     prompt: 'Hello, how are you?',
   );
   
-  print(response.message);
+  print(response);
+  
+  // Using the query method with Message object
+  var detailedResponse = await client.query(
+    system: 'You are a helpful assistant',
+    message: Message.user('Hello, how are you?'),
+  );
+  
+  print(detailedResponse.message);
 }
 ```
 
@@ -90,6 +101,65 @@ void main() async {
 }
 ```
 
+### Using EvaluationAgent
+
+```dart
+import 'package:ai_clients/ai_clients.dart';
+
+void main() async {
+  // Create an AI client
+  var client = AiClients.openAi();
+  
+  // Create an evaluation agent
+  var evaluator = EvaluationAgent(client: client);
+  
+  // Evaluate an AI response
+  var result = await evaluator.evaluate(
+    question: 'What is the capital of France?',
+    answer: 'The capital of France is Paris.',
+  );
+  
+  // Print the evaluation result
+  print('Score: ${result.score}/5');
+  print('Reason: ${result.reason}');
+}
+```
+
+### Using AiMcpClient
+
+```dart
+import 'package:ai_clients/ai_clients.dart';
+
+void main() async {
+  // Create an MCP client
+  var mcpClient = AiMcpClient(
+    name: 'My MCP Client',
+    version: '1.0.0',
+  );
+  
+  // Connect to an MCP server
+  await mcpClient.sse(url: Uri.parse('http://localhost:8000/mcp'));
+  
+  // Get available tools from the MCP server
+  var tools = await mcpClient.getTools();
+  
+  // Create an agent with MCP tools
+  var client = AiClients.openAi();
+  var agent = AiAgent(
+    client: client,
+    description: 'You are a helpful assistant',
+    tools: tools,
+  );
+  
+  // Use the agent with MCP tools
+  var response = await agent.sendMessage(
+    Message.user('Help me with a task using MCP tools'),
+  );
+  
+  print(response.content);
+}
+```
+
 ---
 
 ## API Reference
@@ -101,29 +171,29 @@ All clients implement the following interface:
 ```dart
 // Simple query that returns just a string response
 Future<String> simpleQuery({
-  required String prompt,
+  String? model,
   List<Message> history = const [],
+  Duration? delay,
+  required String prompt,
   String? system,
-  List<Context>? contexts,
-  String model,
   String role = 'user',
-  Duration delay = Duration.zero,
+  List<Context>? contexts,
 });
 
 // Query with more detailed response
 Future<AiClientResponse> query({
-  required String prompt,
+  required Message message,
   List<Message> history = const [],
   String? system,
-  String model,
-  String role = 'user',
-  Duration delay = Duration.zero,
+  String? model,
+  Duration? delay,
   List<Context>? contexts,
-  List<Tool>? tools,
+  List<Tool> tools = const [],
 });
 ```
 
-- **prompt**: The user message to send to the model.
+- **prompt**: The user message to send to the model (for simpleQuery).
+- **message**: The Message object to send to the model (for query).
 - **system**: (Optional) System or developer message for context/instructions.
 - **contexts**: (Optional) Additional context to provide to the model.
 - **model**: (Optional) Model name. Each client has a sensible default.
@@ -155,6 +225,52 @@ Future<Message> sendMessage(
 - **message**: Message to send to the agent.
 - **context**: Additional context to provide to the agent.
 
+### EvaluationAgent Class
+
+The EvaluationAgent class provides functionality for evaluating AI responses:
+
+```dart
+EvaluationAgent({
+  required AiClient client,
+});
+
+Future<EvaluationResult> evaluate({
+  String? prompt,
+  required String question,
+  required String answer,
+  int attempts = 3,
+});
+```
+
+- **client**: The AI client to use for evaluation.
+- **prompt**: (Optional) Custom evaluation prompt.
+- **question**: The original question.
+- **answer**: The AI response to evaluate.
+- **attempts**: Number of retry attempts if evaluation fails.
+
+### AiMcpClient Class
+
+The AiMcpClient class provides integration with the Model Context Protocol:
+
+```dart
+AiMcpClient({
+  String name = 'Example Client',
+  String version = '1.0.0',
+  bool enableDebugLogging = true,
+});
+
+Future<dynamic> sse({
+  required Uri url,
+});
+
+Future<List<Tool>> getTools();
+```
+
+- **name**: Name of the MCP client.
+- **version**: Version of the MCP client.
+- **enableDebugLogging**: Whether to enable debug logging.
+- **url**: URL of the MCP server.
+
 ### API Key Environment Variables
 
 - **BasetenClient**: `BASETEN_API_KEY`
@@ -169,7 +285,7 @@ You can also pass the API key directly to the client constructor.
 ## Available Clients
 
 - `BasetenClient` (default model: `meta-llama/Llama-4-Maverick-17B-128E-Instruct`)
-- `GeminiClient` (default model: `gemini-1.5-pro`)
+- `GeminiClient` (default model: `gemini-2.0-flash`)
 - `OpenAiClient` (default model: `gpt-4.1`)
 - `TogetherClient` (default model: `meta-llama/Llama-3.3-70B-Instruct-Turbo-Free`)
 
@@ -207,5 +323,3 @@ Give a ⭐️ if this project helped you!
 
 Copyright © 2025 [Martin Jablečník](https://github.com/mjablecnik).
 This project is [MIT License](./LICENSE) licensed.
-
-
