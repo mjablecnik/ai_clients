@@ -27,11 +27,10 @@ class GeminiClient extends AiClient {
     String? model,
     Duration? delay,
     List<Message> history = const [],
-    required String prompt,
+    required Message message,
     String? system,
     List<Context>? contexts,
     List<Tool> tools = const [],
-    String role = 'user',
   }) async {
     await Future.delayed(delay ?? this.delay ?? const Duration(milliseconds: 300));
 
@@ -41,8 +40,7 @@ class GeminiClient extends AiClient {
       system: system,
       contexts: contexts,
       history: history,
-      prompt: prompt,
-      role: role,
+      message: message,
     );
 
     try {
@@ -55,15 +53,16 @@ class GeminiClient extends AiClient {
   }
 
   @override
-  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) async {
-    final List<Context> toolCallResults = [];
+  Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) async {
+    final List<ToolResultMessage> toolCallResults = [];
     for (final toolCall in toolCalls) {
       final function = toolCall['functionCall'];
       final arguments = function['args'] is String ? jsonDecode(function['args']) : function['args'];
       final tool = tools.firstWhere((tool) => tool.name == function['name']);
 
       final value = await tool.call(arguments);
-      toolCallResults.add(Context(name: tool.name, value: value));
+      //toolCallResults.add(Context(name: tool.name, value: value));
+      toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
     }
     return toolCallResults;
   }
@@ -74,8 +73,7 @@ class GeminiClient extends AiClient {
     List<Context>? contexts,
     List<Message> history = const [],
     required String model,
-    required String prompt,
-    required String role,
+    required Message message,
   }) {
     final contents = <Map<String, dynamic>>[];
 
@@ -90,15 +88,15 @@ class GeminiClient extends AiClient {
     // Add history messages
     for (final message in history) {
       contents.add({
-        'role': _mapRole(message.type),
+        'role': _mapRole(message.type.name),
         'parts': [{'text': message.content}]
       });
     }
 
     // Add current prompt with contexts
     contents.add({
-      'role': _mapRole(role),
-      'parts': [{'text': buildPrompt(prompt: prompt, contexts: contexts)}]
+      'role': _mapRole(message.type.toRole()),
+      'parts': [{'text': buildPrompt(prompt: message.content, contexts: contexts)}]
     });
 
     final data = {

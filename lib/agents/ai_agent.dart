@@ -12,39 +12,40 @@ class AiAgent {
   AiAgent({required this.client, required this.description, this.tools = const []});
 
   Future<Message> sendMessage(Message message, {List<Context> context = const []}) async {
-    _historyMessages.add(
+
+    AiClientResponse response = await client.query(
+      system: description,
+      history: _historyMessages,
+      message: message,
+      contexts: context,
+      tools: tools,
+      delay: client.delay,
+    );
+
+    addIntoHistory(
       Message(
         type: message.type,
         content: buildPrompt(prompt: message.content, contexts: context),
       ),
     );
 
-    AiClientResponse response = await client.query(
-      system: description,
-      history: _historyMessages,
-      prompt: message.content,
-      contexts: context,
-      tools: tools,
-      delay: client.delay,
-    );
-
     final Message responseMessage;
 
     if (response is ToolResponse) {
-      addIntoHistory(Message.assistant(response.rawMessage!));
+      addIntoHistory(Message.toolCall(response.rawMessage!));
 
       final toolCalls = (jsonDecode(response.rawMessage!) as List);
-      final toolCallResults = await client.makeToolCalls(tools: tools, toolCalls: toolCalls);
-      responseMessage = await sendMessage(Message.toolsCall(''), context: toolCallResults);
+      final toolCallMessages = await client.makeToolCalls(tools: tools, toolCalls: toolCalls);
+      final lastMessage = toolCallMessages.removeLast();
+      _historyMessages.addAll(toolCallMessages);
+      responseMessage = await sendMessage(lastMessage);
     } else {
       responseMessage = Message.assistant(response.message!);
+      addIntoHistory(responseMessage);
     }
-
-    addIntoHistory(responseMessage);
 
     return responseMessage;
   }
-
 
   void addIntoHistory(Message message) {
     _historyMessages.add(message);

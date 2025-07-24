@@ -70,9 +70,8 @@ class BasetenClient extends AiClient {
     String? model,
     Duration? delay,
     List<Message> history = const [],
-    required String prompt,
+    required Message message,
     String? system,
-    String role = 'user',
     List<Context>? contexts,
     List<Tool>? tools,
   }) {
@@ -80,7 +79,7 @@ class BasetenClient extends AiClient {
   }
 
   @override
-  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) {
+  Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) {
     throw UnimplementedError();
   }
 }

@@ -30,11 +30,10 @@ class TogetherClient extends AiClient {
     String? model,
     Duration? delay,
     List<Message> history = const [],
-    required String prompt,
+    required Message message,
     String? system,
     List<Context>? contexts,
     List<Tool> tools = const [],
-    String role = 'user',
   }) async {
     await Future.delayed(delay ?? this.delay ?? const Duration(milliseconds: 300));
 
@@ -44,8 +43,7 @@ class TogetherClient extends AiClient {
       system: system,
       contexts: contexts,
       history: history,
-      prompt: prompt,
-      role: role,
+      message: message,
     );
 
     try {
@@ -57,15 +55,24 @@ class TogetherClient extends AiClient {
   }
 
   @override
-  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List toolCalls}) async {
-    final List<Context> toolCallResults = [];
+  Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List toolCalls}) async {
+    final List<ToolResultMessage> toolCallResults = [];
     for (final toolCall in toolCalls) {
       final function = toolCall['function'];
       final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
       final tool = tools.firstWhere((tool) => tool.name == function['name']);
 
       final value = await tool.call(arguments);
-      toolCallResults.add(Context(name: tool.name, value: value));
+
+      toolCallResults.add(
+        ToolResultMessage(
+          id: toolCall['id'],
+          content: buildPrompt(
+            prompt: '',
+            contexts: [Context(name: tool.name, value: value)],
+          ),
+        ),
+      );
     }
     return toolCallResults;
   }
@@ -76,13 +83,20 @@ class TogetherClient extends AiClient {
     List<Context>? contexts,
     List<Message> history = const [],
     required String model,
-    required String prompt,
-    required String role,
+    required Message message,
   }) {
     final messages = [
       if (system != null) {'role': 'system', 'content': system},
-      ...history.map((message) => {'role': message.type, 'content': message.content}),
-      {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
+      ...history.map(
+        (message) => {
+          'role': message.type.toRole(),
+          'content': message.content,
+        },
+      ),
+      {
+        'role': message.type.toRole(),
+        'content': buildPrompt(prompt: message.content, contexts: contexts),
+      },
     ];
 
     final data = {

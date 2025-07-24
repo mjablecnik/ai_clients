@@ -28,14 +28,13 @@ class OpenAiClient extends AiClient {
 
   @override
   Future<AiClientResponse> query({
-    required String prompt,
+    required Message message,
     List<Message> history = const [],
     String? system,
     String? model,
     Duration? delay,
     List<Context>? contexts,
     List<Tool>? tools,
-    String role = 'user',
   }) async {
     await Future.delayed(delay ?? this.delay ?? const Duration(milliseconds: 300));
 
@@ -45,9 +44,11 @@ class OpenAiClient extends AiClient {
       system: system,
       contexts: contexts,
       history: history,
-      prompt: prompt,
-      role: role,
+      message: message,
     );
+
+    //print(data);
+    //print('');
 
     try {
       final response = await _dio.post('/chat/completions', data: data);
@@ -57,19 +58,45 @@ class OpenAiClient extends AiClient {
     }
   }
 
+  @override
+  Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List toolCalls}) async {
+    final List<ToolResultMessage> toolCallResults = [];
+    for (final toolCall in toolCalls) {
+      final function = toolCall['function'];
+      final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
+      final tool = tools.firstWhere((tool) => tool.name == function['name']);
+
+      final value = await tool.call(arguments);
+      Context(name: tool.name, value: value);
+      toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
+    }
+    return toolCallResults;
+  }
+
   Map<String, dynamic> _buildDataObject({
     List<Tool>? tools,
     String? system,
     List<Context>? contexts,
     List<Message> history = const [],
     required String model,
-    required String prompt,
-    required String role,
+    required Message message,
   }) {
     final messages = [
       if (system != null) {'role': 'system', 'content': system},
-      ...history.map((message) => {'role': message.type, 'content': message.content}),
-      {'role': role, 'content': buildPrompt(prompt: prompt, contexts: contexts)},
+      ...history.map(
+        (message) => {
+          'role': message.type.toRole(),
+          if (message.type == MessageType.toolCall)
+            'tool_calls': jsonDecode(message.content)
+          else
+            'content': message.content,
+        },
+      ),
+      {
+        'role': message.type.toRole(),
+        'tool_call_id': message.id,
+        'content': buildPrompt(prompt: message.content, contexts: contexts),
+      },
     ];
 
     final data = {
@@ -141,10 +168,5 @@ class OpenAiClient extends AiClient {
     } else {
       throw Exception('No response from ChatGPT API.');
     }
-  }
-
-  @override
-  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) {
-    throw UnimplementedError();
   }
 }

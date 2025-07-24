@@ -18,24 +18,22 @@ abstract class AiClient {
       model: model,
       delay: delay,
       history: history,
-      prompt: prompt,
       system: system,
       contexts: contexts,
-      role: role,
+      message: Message(type: MessageType.values.byName(role), content: prompt),
     );
     return result.message!;
   }
 
   Future<AiClientResponse> query({
-    required String prompt,
+    required Message message,
     List<Message> history = const [],
     String? system,
     String? model,
-    String role = 'user',
     Duration? delay,
     List<Context>? contexts,
     List<Tool> tools = const [],
   });
 
-  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List toolCalls});
+  Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List toolCalls});
 }

@@ -6,14 +6,16 @@ void main() async {
   final tools = [
     Tool(name: "getWeatherInformation", description: "Získá informace o počasí", function: getWeatherInformation),
   ];
-  var aiClient = AiClients.together(model: "meta-llama/Llama-3.3-70B-Instruct-Turbo");
+  //var aiClient = AiClients.openAi(model: 'gpt-4o-mini');
+  //var aiClient = AiClients.together(model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo');
+  var aiClient = AiClients.gemini();
   var aiAgent = AiAgent(client: aiClient, description: "Jsi AI asistent a komunikuješ v češtině", tools: tools);
   var response = await aiAgent.sendMessage(Message.user("řekni mi jaké je teď počasí"));
 
   print(response.content);
   print('\n');
 
-  aiAgent.showHistory();
+  //aiAgent.showHistory();
 }
 
 Future<String> getWeatherInformation(Map<String, dynamic> json) async {
