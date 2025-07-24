@@ -4,7 +4,8 @@ void main() async {
   final AiMcpClient client = await AiMcpClient().sse(url: Uri.parse('http://localhost:8081/sse'));
   final allTools = await client.getTools();
 
-  var aiClient = AiClients.together(model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo');
+  //var aiClient = AiClients.together(model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo');
+  var aiClient = AiClients.gemini();
   var aiAgent = AiAgent(
     client: aiClient,
     description:
@@ -14,22 +15,18 @@ void main() async {
   );
 
   try {
-    // var response = await aiAgent.sendMessage(
-    //   Message.user("Ulož do seznamu následující úkoly: Vyprat prádlo, vyžehlit, dojít na nákup"),
-    // );
-
-    // print(response.content);
-    // print('\n');
-
-    var response = await aiAgent.sendMessage(Message.user("řekni mi, jaké úkoly je dnes potřeba splnit"));
+    var response = await aiAgent.sendMessage(
+      Message.user("Ulož do seznamu následující úkoly: Vyprat prádlo, vyžehlit, dojít na nákup"),
+    );
 
     print(response.content);
     print('\n');
 
-    //response = await aiAgent.sendMessage(Message.user("Vyprání prádla tam je dvakrát. Smaž jedno vyprání prádla."));
+    response = await aiAgent.sendMessage(Message.user("řekni mi, jaké úkoly je dnes potřeba splnit"));
 
-    //print(response.content);
-    //print('\n');
+    print(response.content);
+    print('\n');
+
   } catch (e) {
     print(e);
   }
