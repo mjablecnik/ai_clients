@@ -142,4 +142,9 @@ class OpenAiClient extends AiClient {
       throw Exception('No response from ChatGPT API.');
     }
   }
+
+  @override
+  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) {
+    throw UnimplementedError();
+  }
 }

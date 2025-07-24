@@ -56,6 +56,20 @@ class TogetherClient extends AiClient {
     }
   }
 
+  @override
+  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List toolCalls}) async {
+    final List<Context> toolCallResults = [];
+    for (final toolCall in toolCalls) {
+      final function = toolCall['function'];
+      final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
+      final tool = tools.firstWhere((tool) => tool.name == function['name']);
+
+      final value = await tool.call(arguments);
+      toolCallResults.add(Context(name: tool.name, value: value));
+    }
+    return toolCallResults;
+  }
+
   Map<String, dynamic> _buildDataObject({
     List<Tool>? tools,
     String? system,

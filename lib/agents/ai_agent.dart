@@ -28,22 +28,13 @@ class AiAgent {
       delay: client.delay,
     );
 
-    final List<Context> toolCallResults = [];
     final Message responseMessage;
 
     if (response is ToolResponse) {
       addIntoHistory(Message.assistant(response.rawMessage!));
 
       final toolCalls = (jsonDecode(response.rawMessage!) as List);
-      for (final toolCall in toolCalls) {
-        final function = toolCall['function'];
-        final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
-        final tool = tools.firstWhere((tool) => tool.name == function['name']);
-
-        final value = await tool.call(arguments);
-        toolCallResults.add(Context(name: tool.name, value: value));
-      }
-
+      final toolCallResults = await client.makeToolCalls(tools: tools, toolCalls: toolCalls);
       responseMessage = await sendMessage(Message.toolsCall(''), context: toolCallResults);
     } else {
       responseMessage = Message.assistant(response.message!);

@@ -36,4 +36,6 @@ abstract class AiClient {
     List<Context>? contexts,
     List<Tool> tools = const [],
   });
+
+  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List toolCalls});
 }

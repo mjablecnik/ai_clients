@@ -78,4 +78,9 @@ class BasetenClient extends AiClient {
   }) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) {
+    throw UnimplementedError();
+  }
 }

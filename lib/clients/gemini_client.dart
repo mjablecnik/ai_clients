@@ -221,4 +221,9 @@ class GeminiClient extends AiClient {
       throw Exception('No response from Gemini API.');
     }
   }
+
+  @override
+  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) {
+    throw UnimplementedError();
+  }
 }
