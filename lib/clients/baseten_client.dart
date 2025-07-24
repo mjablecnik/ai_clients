@@ -11,7 +11,7 @@ class BasetenClient extends AiClient {
   final String _apiUrl;
   final String _model;
 
-  BasetenClient({String? apiUrl, String? apiKey, String? model, super.delay})
+  BasetenClient({String? apiUrl, String? apiKey, String? model, super.delay, super.logger})
     : _dio = Dio(),
       _model = model ?? 'meta-llama/Llama-4-Maverick-17B-128E-Instruct',
       _apiUrl = apiUrl ?? 'https://inference.baseten.co/v1',
@@ -54,7 +54,12 @@ class BasetenClient extends AiClient {
     };
 
     try {
+      logRequest(data);
+      
       final response = await _dio.post('/chat/completions', data: data);
+      
+      logResponse(response.data);
+      
       final choices = response.data['choices'];
       if (choices != null && choices.isNotEmpty) {
         return choices[0]['message']['content'] as String;
@@ -62,6 +67,7 @@ class BasetenClient extends AiClient {
         throw Exception('No response from ChatGPT API.');
       }
     } on DioException catch (e) {
+      logError(e);
       throw Exception('Failed to fetch response: ${e.response?.data ?? e.message}');
     }
   }
@@ -87,13 +93,16 @@ class BasetenClient extends AiClient {
       message: message,
     );
 
-    //print(data);
-    //print('');
-
     try {
+      logRequest(data);
+      
       final response = await _dio.post('/chat/completions', data: data);
+      
+      logResponse(response.data);
+      
       return _parseResponse(response.data, originalTools: tools ?? []);
     } on DioException catch (e) {
+      logError(e);
       throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
     }
   }
@@ -114,6 +123,9 @@ class BasetenClient extends AiClient {
 
   @override
   Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List toolCalls}) async {
+    // Log the tool calls
+    logRequest({'tool_calls': toolCalls});
+    
     final List<ToolResultMessage> toolCallResults = [];
     toolCalls = _removeDuplicityTools(toolCalls);
 
@@ -122,8 +134,19 @@ class BasetenClient extends AiClient {
       final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
       final tool = tools.firstWhere((tool) => tool.name == function['name']);
 
-      final value = await tool.call(arguments);
-      toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
+      try {
+        final value = await tool.call(arguments);
+        toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
+        
+        // Log successful tool result
+        logResponse({'id': toolCall['id'], 'result': value});
+      } catch (e) {
+        // Log tool error
+        logError(e);
+        
+        // Still need to add a result even if there's an error
+        toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: 'Error: ${e.toString()}'));
+      }
     }
     return toolCallResults;
   }

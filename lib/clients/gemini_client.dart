@@ -9,7 +9,7 @@ class GeminiClient extends AiClient {
   final String _apiUrl;
   final String _model;
 
-  GeminiClient({String? apiUrl, String? apiKey, String? model, super.delay})
+  GeminiClient({String? apiUrl, String? apiKey, String? model, super.delay, super.logger})
     : _dio = Dio(),
       _model = model ?? 'gemini-2.0-flash',
       _apiUrl = apiUrl ?? 'https://generativelanguage.googleapis.com/v1beta',
@@ -45,24 +45,46 @@ class GeminiClient extends AiClient {
 
     try {
       final modelPath = model ?? _model;
-      final response = await _dio.post('/models/$modelPath:generateContent', data: data);
+      final endpoint = '/models/$modelPath:generateContent';
+      
+      logRequest(data);
+      
+      final response = await _dio.post(endpoint, data: data);
+      
+      logResponse(response.data);
+      
       return _parseResponse(response.data, originalTools: tools);
     } on DioException catch (e) {
+      logError(e);
+      
       throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
     }
   }
 
   @override
   Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) async {
+    // Log the tool calls
+    logRequest({'tool_calls': toolCalls});
+    
     final List<ToolResultMessage> toolCallResults = [];
     for (final toolCall in toolCalls) {
       final function = toolCall['functionCall'];
       final arguments = function['args'] is String ? jsonDecode(function['args']) : function['args'];
       final tool = tools.firstWhere((tool) => tool.name == function['name']);
 
-      final value = await tool.call(arguments);
-      //toolCallResults.add(Context(name: tool.name, value: value));
-      toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
+      try {
+        final value = await tool.call(arguments);
+        toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
+        
+        // Log successful tool result
+        logResponse({'id': toolCall['id'], 'result': value});
+      } catch (e) {
+        // Log tool error
+        logError(e);
+        
+        // Still need to add a result even if there's an error
+        toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: 'Error: ${e.toString()}'));
+      }
     }
     return toolCallResults;
   }

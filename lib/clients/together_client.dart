@@ -12,7 +12,7 @@ class TogetherClient extends AiClient {
 
   Map<String, HistoryChat> get history => _history;
 
-  TogetherClient({String? apiUrl, String? apiKey, String? model, super.delay})
+  TogetherClient({String? apiUrl, String? apiKey, String? model, super.delay, super.logger})
     : _dio = Dio(),
       _model = model ?? 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
       _apiUrl = apiUrl ?? 'https://api.together.xyz/v1',
@@ -47,32 +47,58 @@ class TogetherClient extends AiClient {
     );
 
     try {
+      logRequest(data);
+      
       final response = await _dio.post('/chat/completions', data: data);
+      
+      logResponse(response.data);
+      
       return _parseResponse(response.data, originalTools: tools);
     } on DioException catch (e) {
+      logError(e);
+      
       throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
     }
   }
 
   @override
   Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List toolCalls}) async {
+    // Log the tool calls
+    logRequest({'tool_calls': toolCalls});
+    
     final List<ToolResultMessage> toolCallResults = [];
     for (final toolCall in toolCalls) {
       final function = toolCall['function'];
       final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
       final tool = tools.firstWhere((tool) => tool.name == function['name']);
 
-      final value = await tool.call(arguments);
+      try {
+        final value = await tool.call(arguments);
 
-      toolCallResults.add(
-        ToolResultMessage(
+        final resultMessage = ToolResultMessage(
           id: toolCall['id'],
           content: buildPrompt(
             prompt: '',
             contexts: [Context(name: tool.name, value: value)],
           ),
-        ),
-      );
+        );
+        
+        toolCallResults.add(resultMessage);
+        
+        // Log successful tool result
+        logResponse({'id': toolCall['id'], 'result': value});
+      } catch (e) {
+        // Log tool error
+        logError(e);
+        
+        // Still need to add a result even if there's an error
+        toolCallResults.add(
+          ToolResultMessage(
+            id: toolCall['id'],
+            content: 'Error: ${e.toString()}',
+          ),
+        );
+      }
     }
     return toolCallResults;
   }

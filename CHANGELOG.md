@@ -1,3 +1,12 @@
+## 0.7.0
+
+- Added comprehensive logging system with configurable outputs
+- Implemented Logger class with different log levels (debug, info, warning, error)
+- Added support for both console and file logging
+- Integrated logging into AiClient and AiAgent classes
+- Added tool call logging
+- Added extensible LogHandler interface for future remote logging support
+
 ## 0.6.0
 
 - Added EvaluationAgent for assessing AI response quality.

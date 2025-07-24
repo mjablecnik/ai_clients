@@ -1,9 +1,19 @@
+import 'dart:convert';
+
 import 'package:ai_clients/models.dart';
+import 'package:ai_clients/logging/logging.dart';
 
 abstract class AiClient {
   final Duration? delay;
+  final Logger _logger;
 
-  AiClient({String? apiUrl, String? apiKey, String? model, this.delay = const Duration(milliseconds: 300)});
+  AiClient({
+    String? apiUrl,
+    String? apiKey,
+    String? model,
+    this.delay = const Duration(milliseconds: 300),
+    Logger? logger,
+  }) : _logger = logger ?? Logger();
 
   Future<String> simpleQuery({
     String? model,
@@ -36,4 +46,31 @@ abstract class AiClient {
   });
 
   Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List toolCalls});
+
+  /// Logs a request being sent to the AI provider.
+  void logRequest(Map<String, dynamic> data) {
+    _logger.clientLog(
+      LogLevel.info,
+      jsonEncode(data),
+      clientName: runtimeType.toString(),
+    );
+  }
+
+  /// Logs a response received from the AI provider.
+  void logResponse(Map<String, dynamic> response) {
+    _logger.clientLog(
+      LogLevel.info,
+      jsonEncode(response),
+      clientName: runtimeType.toString(),
+    );
+  }
+
+  /// Logs an error that occurred during a request.
+  void logError(dynamic error) {
+    _logger.clientLog(
+      LogLevel.error,
+      'Error: ${error.toString()}',
+      clientName: runtimeType.toString(),
+    );
+  }
 }

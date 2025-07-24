@@ -16,6 +16,7 @@ A Dart package providing a unified interface for interacting with various AI mod
 - Tool calling support for AI agents
 - Evaluation capabilities for assessing AI response quality
 - MCP (Model Context Protocol) client support
+- Comprehensive logging system with configurable outputs
 
 ---
 
@@ -160,6 +161,50 @@ void main() async {
 }
 ```
 
+### Using the Logging System
+
+```dart
+import 'package:ai_clients/ai_clients.dart';
+
+void main() {
+  // Get the singleton logger instance
+  final logger = Logger();
+  
+  // Configure logging with console output
+  logger.updateConfig(LogConfig.consoleOnly(
+    level: LogLevel.info,  // Only show info level and above
+  ));
+  
+  // Log messages at different levels
+  logger.debug('This is a debug message');  // Won't be displayed (below info level)
+  logger.info('This is an info message');
+  logger.warning('This is a warning message');
+  logger.error('This is an error message');
+  
+  // Configure logging with both console and file output
+  logger.updateConfig(LogConfig(
+    enabled: true,
+    globalLevel: LogLevel.debug,
+    enableConsoleOutput: true,
+    enableFileOutput: true,
+    logFilePath: 'ai_clients_logs.txt',
+  ));
+  
+  // Component-specific logging
+  logger.clientLog(
+    LogLevel.info,
+    'API request completed',
+    clientName: 'OpenAI',
+    metadata: {'duration': '1.2s', 'tokens': 150},
+  );
+  
+  // Disable logging when done
+  logger.updateConfig(LogConfig.disabled());
+}
+```
+
+See the [logging example](example/logging_example.dart) for more detailed usage.
+
 ---
 
 ## API Reference
@@ -270,6 +315,52 @@ Future<List<Tool>> getTools();
 - **version**: Version of the MCP client.
 - **enableDebugLogging**: Whether to enable debug logging.
 - **url**: URL of the MCP server.
+
+### Logger Class
+
+The Logger class provides a centralized logging system:
+
+```dart
+// Get the singleton logger instance
+Logger({LogConfig? config});
+
+// Update the logger configuration
+void updateConfig(LogConfig newConfig);
+
+// Log methods
+void debug(String message, {String? source, Map<String, dynamic>? metadata});
+void info(String message, {String? source, Map<String, dynamic>? metadata});
+void warning(String message, {String? source, Map<String, dynamic>? metadata});
+void error(String message, {String? source, Map<String, dynamic>? metadata});
+
+// Component-specific logging
+void clientLog(LogLevel level, String message, {String? clientName, Map<String, dynamic>? metadata});
+void agentLog(LogLevel level, String message, {String? agentName, Map<String, dynamic>? metadata});
+void toolLog(LogLevel level, String message, {String? toolName, Map<String, dynamic>? metadata});
+```
+
+### LogConfig Class
+
+The LogConfig class controls logging behavior:
+
+```dart
+LogConfig({
+  bool enabled = false,
+  LogLevel globalLevel = LogLevel.info,
+  bool enableClientLogs = true,
+  bool enableAgentLogs = true,
+  bool enableToolLogs = true,
+  bool enableConsoleOutput = true,
+  bool enableFileOutput = false,
+  String? logFilePath,
+});
+
+// Factory constructors
+factory LogConfig.disabled();
+factory LogConfig.consoleOnly({LogLevel level = LogLevel.info, ...});
+factory LogConfig.fileOnly({required String filePath, LogLevel level = LogLevel.info, ...});
+factory LogConfig.both({required String filePath, LogLevel level = LogLevel.info, ...});
+```
 
 ### API Key Environment Variables
 

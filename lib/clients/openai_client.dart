@@ -13,7 +13,7 @@ class OpenAiClient extends AiClient {
   final String _apiUrl;
   final String _model;
 
-  OpenAiClient({String? apiUrl, String? apiKey, String? model, super.delay})
+  OpenAiClient({String? apiUrl, String? apiKey, String? model, super.delay, super.logger})
     : _dio = Dio(),
       _model = model ?? 'gpt-4.1',
       _apiUrl = apiUrl ?? 'https://api.openai.com/v1',
@@ -51,23 +51,44 @@ class OpenAiClient extends AiClient {
     //print('');
 
     try {
+      logRequest(data);
+      
       final response = await _dio.post('/chat/completions', data: data);
+      
+      logResponse(response.data);
+      
       return _parseResponse(response.data, originalTools: tools ?? []);
     } on DioException catch (e) {
+      logError(e);
+      
       throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
     }
   }
 
   @override
   Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List toolCalls}) async {
+    // Log the tool calls
+    logRequest({'tool_calls': toolCalls});
+    
     final List<ToolResultMessage> toolCallResults = [];
     for (final toolCall in toolCalls) {
       final function = toolCall['function'];
       final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
       final tool = tools.firstWhere((tool) => tool.name == function['name']);
 
-      final value = await tool.call(arguments);
-      toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
+      try {
+        final value = await tool.call(arguments);
+        toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
+        
+        // Log successful tool result
+        logResponse({'id': toolCall['id'], 'result': value});
+      } catch (e) {
+        // Log tool error
+        logError(e);
+        
+        // Still need to add a result even if there's an error
+        toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: 'Error: ${e.toString()}'));
+      }
     }
     return toolCallResults;
   }
