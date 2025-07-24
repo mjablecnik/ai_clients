@@ -3,6 +3,8 @@
 - Added EvaluationAgent for assessing AI response quality.
 - Added GeminiClient for Google's Gemini API integration.
 - Reorganized exports.
+- Added support for MCP client.
+- Fixed tool calling with arguments.
 
 ## 0.5.0
 
