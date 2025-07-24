@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:ai_clients/clients/ai_client.dart';
 import 'package:ai_clients/models.dart';
@@ -67,19 +68,161 @@ class BasetenClient extends AiClient {
 
   @override
   Future<AiClientResponse> query({
+    required Message message,
+    List<Message> history = const [],
+    String? system,
     String? model,
     Duration? delay,
-    List<Message> history = const [],
-    required Message message,
-    String? system,
     List<Context>? contexts,
     List<Tool>? tools,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    await Future.delayed(delay ?? this.delay ?? const Duration(milliseconds: 300));
+
+    final data = _buildDataObject(
+      model: model ?? _model,
+      tools: tools,
+      system: system,
+      contexts: contexts,
+      history: history,
+      message: message,
+    );
+
+    print(data);
+    print('');
+
+    try {
+      final response = await _dio.post('/chat/completions', data: data);
+      return _parseResponse(response.data, originalTools: tools ?? []);
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch response: [${e.response?.statusCode}] ${e.response?.data ?? e.message}');
+    }
+  }
+
+  List _removeDuplicityTools(List toolCalls) {
+    List<Map<String, dynamic>> uniqueList = [];
+    Set<String> seenFunctionNames = {};
+
+    for (var item in toolCalls) {
+      String functionName = item['function']['name'];
+      if (!seenFunctionNames.contains(functionName)) {
+        seenFunctionNames.add(functionName);
+        uniqueList.add(item);
+      }
+    }
+    return uniqueList;
   }
 
   @override
-  Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) {
-    throw UnimplementedError();
+  Future<List<ToolResultMessage>> makeToolCalls({required List<Tool> tools, required List toolCalls}) async {
+    final List<ToolResultMessage> toolCallResults = [];
+    toolCalls = _removeDuplicityTools(toolCalls);
+
+    for (final toolCall in toolCalls) {
+      final function = toolCall['function'];
+      final arguments = function['arguments'] is String ? jsonDecode(function['arguments']) : function['arguments'];
+      final tool = tools.firstWhere((tool) => tool.name == function['name']);
+
+      final value = await tool.call(arguments);
+      toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
+    }
+    return toolCallResults;
+  }
+
+  Map<String, dynamic> _buildDataObject({
+    List<Tool>? tools,
+    String? system,
+    List<Context>? contexts,
+    List<Message> history = const [],
+    required String model,
+    required Message message,
+  }) {
+    final messages = [
+      if (system != null) {'role': 'system', 'content': system},
+      ...history.map(
+            (message) => {
+          'role': message.type.toRole(),
+          'tool_call_id': message.id,
+          if (message.type == MessageType.toolCall)
+            'tool_calls': jsonDecode(message.content)
+          else
+            'content': message.content,
+        },
+      ),
+      {
+        'role': message.type.toRole(),
+        'tool_call_id': message.id,
+        'content': buildPrompt(prompt: message.content, contexts: contexts),
+      },
+    ];
+
+    final data = {
+      'model': model,
+      'messages': messages,
+      if (tools != null && tools.isNotEmpty) 'tools': _buildToolsObject(tools),
+    };
+    return data;
+  }
+
+  List<Map<String, dynamic>> _buildToolsObject(List<Tool> tools) {
+    return [
+      ...tools.map(
+            (tool) => {
+          'type': 'function',
+          'function': {
+            'name': tool.name,
+            'description': tool.description,
+            'parameters': {
+              'type': 'object',
+              'properties': {
+                for (final param in tool.parameters)
+                  param.name: {
+                    'type': param.type,
+                    'description': param.description,
+                    if (param.enumValues != null) 'enum': param.enumValues,
+                  },
+              },
+              'required': [
+                for (final param in tool.parameters)
+                  if (param.required) param.name,
+              ],
+            },
+          },
+        },
+      ),
+    ];
+  }
+
+  AiClientResponse _parseResponse(Map<String, dynamic> json, {required List<Tool> originalTools}) {
+    final choices = json['choices'];
+    if (choices != null && choices.isNotEmpty) {
+      final choice = choices[0];
+      final messageObj = choice['message'] ?? {};
+      final id = json['id'] ?? '';
+      final role = messageObj['role'] ?? 'assistant';
+      final message = messageObj['content'] ?? '';
+
+      // Parse tools if present in the message
+      List<Tool> tools = [];
+      if (messageObj['tool_calls'] != null && messageObj['tool_calls'] is List) {
+        for (var t in (messageObj['tool_calls'] as List)) {
+          final name = (t as Map<String, dynamic>)['function']['name'];
+          final tool = originalTools.firstWhere((tool) => tool.name == name);
+          //tool.arguments = jsonDecode(t['function']['arguments']);
+          tools.add(tool);
+        }
+      }
+
+      final finishReason = choices[0]['finish_reason'];
+
+      if (finishReason == 'tool_calls') {
+        return ToolResponse(id: id, tools: tools, rawMessage: jsonEncode(messageObj['tool_calls']));
+      } else if (finishReason == 'stop') {
+        return AssistantResponse(id: id, message: message);
+      } else {
+        throw Exception('Unknown response role: $role.');
+      }
+    } else {
+      throw Exception('No response from ChatGPT API.');
+    }
   }
 }

@@ -67,7 +67,6 @@ class OpenAiClient extends AiClient {
       final tool = tools.firstWhere((tool) => tool.name == function['name']);
 
       final value = await tool.call(arguments);
-      Context(name: tool.name, value: value);
       toolCallResults.add(ToolResultMessage(id: toolCall['id'], content: value));
     }
     return toolCallResults;
@@ -86,6 +85,7 @@ class OpenAiClient extends AiClient {
       ...history.map(
         (message) => {
           'role': message.type.toRole(),
+          'tool_call_id': message.id,
           if (message.type == MessageType.toolCall)
             'tool_calls': jsonDecode(message.content)
           else

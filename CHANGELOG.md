@@ -6,6 +6,7 @@
 - Added support for MCP client.
 - Fixed tool calling with arguments.
 - Added Message object into query method of all AI clients.
+- Added implementation of Baseten client.
 
 ## 0.5.0
 

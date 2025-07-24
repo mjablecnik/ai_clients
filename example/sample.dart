@@ -8,7 +8,8 @@ void main() async {
   ];
   //var aiClient = AiClients.openAi(model: 'gpt-4o-mini');
   //var aiClient = AiClients.together(model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo');
-  var aiClient = AiClients.gemini();
+  //var aiClient = AiClients.gemini();
+  var aiClient = AiClients.baseten();
   var aiAgent = AiAgent(client: aiClient, description: "Jsi AI asistent a komunikuješ v češtině", tools: tools);
   var response = await aiAgent.sendMessage(Message.user("řekni mi jaké je teď počasí"));
 
