@@ -54,6 +54,20 @@ class GeminiClient extends AiClient {
     }
   }
 
+  @override
+  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) async {
+    final List<Context> toolCallResults = [];
+    for (final toolCall in toolCalls) {
+      final function = toolCall['functionCall'];
+      final arguments = function['args'] is String ? jsonDecode(function['args']) : function['args'];
+      final tool = tools.firstWhere((tool) => tool.name == function['name']);
+
+      final value = await tool.call(arguments);
+      toolCallResults.add(Context(name: tool.name, value: value));
+    }
+    return toolCallResults;
+  }
+
   Map<String, dynamic> _buildDataObject({
     List<Tool>? tools,
     String? system,
@@ -220,10 +234,5 @@ class GeminiClient extends AiClient {
     } else {
       throw Exception('No response from Gemini API.');
     }
-  }
-
-  @override
-  Future<List<Context>> makeToolCalls({required List<Tool> tools, required List<dynamic> toolCalls}) {
-    throw UnimplementedError();
   }
 }
