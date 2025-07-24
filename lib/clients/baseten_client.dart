@@ -87,8 +87,8 @@ class BasetenClient extends AiClient {
       message: message,
     );
 
-    print(data);
-    print('');
+    //print(data);
+    //print('');
 
     try {
       final response = await _dio.post('/chat/completions', data: data);

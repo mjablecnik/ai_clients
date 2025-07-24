@@ -5,6 +5,8 @@ void main() async {
   final allTools = await client.getTools();
 
   //var aiClient = AiClients.together(model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo');
+  //var aiClient = AiClients.openAi(model: 'gpt-4o-mini');
+  //var aiClient = AiClients.baseten();
   var aiClient = AiClients.gemini();
   var aiAgent = AiAgent(
     client: aiClient,

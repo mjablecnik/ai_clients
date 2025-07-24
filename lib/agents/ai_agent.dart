@@ -12,7 +12,6 @@ class AiAgent {
   AiAgent({required this.client, required this.description, this.tools = const []});
 
   Future<Message> sendMessage(Message message, {List<Context> context = const []}) async {
-
     AiClientResponse response = await client.query(
       system: description,
       history: _historyMessages,
@@ -23,10 +22,12 @@ class AiAgent {
     );
 
     addIntoHistory(
-      Message(
-        type: message.type,
-        content: buildPrompt(prompt: message.content, contexts: context),
-      ),
+      message.type == MessageType.toolResult
+          ? message
+          : Message(
+              type: message.type,
+              content: buildPrompt(prompt: message.content, contexts: context),
+            ),
     );
 
     final Message responseMessage;
