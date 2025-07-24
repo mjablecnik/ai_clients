@@ -1,4 +1,4 @@
-## [Unreleased]
+## 0.6.0
 
 - Added EvaluationAgent for assessing AI response quality.
 - Added GeminiClient for Google's Gemini API integration.
