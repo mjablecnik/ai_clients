@@ -166,40 +166,27 @@ void main() async {
 ```dart
 import 'package:ai_clients/ai_clients.dart';
 
-void main() {
-  // Get the singleton logger instance
-  final logger = Logger();
-  
-  // Configure logging with console output
-  logger.updateConfig(LogConfig.consoleOnly(
-    level: LogLevel.info,  // Only show info level and above
-  ));
-  
-  // Log messages at different levels
-  logger.debug('This is a debug message');  // Won't be displayed (below info level)
-  logger.info('This is an info message');
-  logger.warning('This is a warning message');
-  logger.error('This is an error message');
-  
-  // Configure logging with both console and file output
-  logger.updateConfig(LogConfig(
-    enabled: true,
-    globalLevel: LogLevel.debug,
-    enableConsoleOutput: true,
-    enableFileOutput: true,
-    logFilePath: 'ai_clients_logs.txt',
-  ));
-  
-  // Component-specific logging
-  logger.clientLog(
-    LogLevel.info,
-    'API request completed',
-    clientName: 'OpenAI',
-    metadata: {'duration': '1.2s', 'tokens': 150},
+void main() async {
+  final logger = Logger(
+    config: LogConfig(
+      enabled: true,
+      globalLevel: LogLevel.debug,
+      enableFileOutput: true,
+      enableConsoleOutput: false,
+      logFilePath: "/tmp/logs/test.log",
+    ),
   );
-  
-  // Disable logging when done
-  logger.updateConfig(LogConfig.disabled());
+
+  final client = AiClients.gemini(
+    logger: logger,
+  );
+
+  var response = await client.simpleQuery(
+    system: 'You are a helpful assistant',
+    prompt: 'Hello, how are you?',
+  );
+
+  print(response);
 }
 ```
 
