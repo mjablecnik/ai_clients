@@ -1,3 +1,9 @@
+## Unreleased
+
+- Added history messages into constructor for AiAgent
+- Fixed null function call in GeminiClient
+
+
 ## 0.7.0
 
 - Added comprehensive logging system with configurable outputs
