@@ -69,6 +69,7 @@ class GeminiClient extends AiClient {
     final List<ToolResultMessage> toolCallResults = [];
     for (final toolCall in toolCalls) {
       final function = toolCall['functionCall'];
+      if (function == null) continue;
       final arguments = function['args'] is String ? jsonDecode(function['args']) : function['args'];
       final tool = tools.firstWhere((tool) => tool.name == function['name']);
 
