@@ -9,10 +9,16 @@ class AiAgent {
   final String description;
   final Logger _logger;
 
-  final List<Message> _historyMessages = [];
+  final List<Message> _history;
 
-  AiAgent({required this.client, required this.description, this.tools = const [], Logger? logger})
-    : _logger = logger ?? Logger() {
+  AiAgent({
+    required this.client,
+    required this.description,
+    this.tools = const [],
+    Logger? logger,
+    List<Message>? history,
+  }) : _history = history ?? [],
+       _logger = logger ?? Logger() {
     _logger.agentLog(
       LogLevel.debug,
       'Agent initialized',
@@ -23,7 +29,7 @@ class AiAgent {
   Future<Message> sendMessage(Message message, {List<Context> context = const []}) async {
     AiClientResponse response = await client.query(
       system: description,
-      history: _historyMessages,
+      history: _history,
       message: message,
       contexts: context,
       tools: tools,
@@ -48,7 +54,7 @@ class AiAgent {
 
       final toolCallMessages = await client.makeToolCalls(tools: tools, toolCalls: toolCalls);
       final lastMessage = toolCallMessages.removeLast();
-      _historyMessages.addAll(toolCallMessages);
+      _history.addAll(toolCallMessages);
 
       responseMessage = await sendMessage(lastMessage);
     } else {
@@ -60,7 +66,7 @@ class AiAgent {
   }
 
   void addIntoHistory(Message message) {
-    _historyMessages.add(message);
+    _history.add(message);
 
     _logger.agentLog(
       LogLevel.debug,
@@ -70,10 +76,10 @@ class AiAgent {
   }
 
   void clearHistory() {
-    _historyMessages.clear();
+    _history.clear();
   }
 
   void showHistory() {
-    print(_historyMessages);
+    print(_history);
   }
 }
