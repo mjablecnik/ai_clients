@@ -1,4 +1,4 @@
-## Unreleased
+## 0.8.0
 
 - Added history messages into constructor for AiAgent
 - Fixed null function call in GeminiClient
